@@ -619,8 +619,8 @@ let customerMap = {};
 /* Load external customer CC mapping */
 fetch('customers.json')
   .then(r => r.json())
-  .then(data => { customerMap = data; })
-  .catch(() => { customerMap = {}; });
+  .then(data => { customerMap = data; console.log('customerMap loaded:', customerMap); })
+  .catch(err => { customerMap = {}; console.warn('customers.json failed:', err); });
 let lastSections = null;
 
 function loadSample(){
@@ -1137,6 +1137,7 @@ function sendToHotline(){
   if(!body){ errEl.textContent='Could not build email body.'; errEl.style.display='block'; return; }
   const cid = lastAnalysis && lastAnalysis.cid ? lastAnalysis.cid : null;
   const ccEmail = cid && customerMap[cid] ? customerMap[cid] : null;
+  console.log('CID:', cid, '| customerMap:', customerMap, '| ccEmail:', ccEmail);
   const ccPart = ccEmail ? `&cc=${encodeURIComponent(ccEmail)}` : '';
   window.location.href=`mailto:hotline.fleetvisor@addsecure.com?subject=${subject}${ccPart}&body=${encodeURIComponent(body)}`;
 }
