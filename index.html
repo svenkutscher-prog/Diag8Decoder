@@ -1,0 +1,1135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DIAG8 Analyser — Redesign</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --ink:#0f1c2e;
+  --ink-soft:#3d4f66;
+  --muted:#7186a0;
+  --steel:#1d4e89;
+  --steel-dark:#16365c;
+  --steel-light:#e7eef8;
+  --bg:#eef1f5;
+  --surface:#ffffff;
+  --line:#dce3ec;
+  --line-soft:#e9eef4;
+  --ok:#15803d;       --ok-bg:#ecfdf3;   --ok-line:#a7e3c0;
+  --err:#b91c1c;      --err-bg:#fdf0ef;  --err-line:#f3b6b2;
+  --warn:#b45309;     --warn-bg:#fdf6ec; --warn-line:#f0d8a8;
+  --info:#1d4e89;     --info-bg:#eaf1fb;
+  --mono:'IBM Plex Mono',monospace;
+  --sans:'IBM Plex Sans',sans-serif;
+  --r:10px;
+  --shadow:0 1px 2px rgba(15,28,46,.05),0 4px 14px rgba(15,28,46,.06);
+}
+html,body{height:100%}
+body{font-family:var(--sans);background:var(--bg);color:var(--ink);font-size:13.5px;line-height:1.5;overflow:hidden}
+a{color:var(--steel)}
+button{font-family:var(--sans)}
+
+/* ====== APP FRAME ====== */
+.app{display:flex;flex-direction:column;height:100vh}
+.topbar{flex-shrink:0;height:54px;background:var(--ink);color:#fff;display:flex;align-items:center;padding:0 20px;gap:14px}
+.logo{display:flex;align-items:center;gap:10px;font-weight:600;font-size:14.5px;letter-spacing:.2px}
+.logo-mark{width:30px;height:30px;border-radius:8px;background:linear-gradient(135deg,#2c6bbf,#16365c);display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:11px;font-weight:600;letter-spacing:.5px}
+.top-divider{width:1px;height:22px;background:rgba(255,255,255,.18)}
+.top-device{display:none;align-items:center;gap:16px;font-size:12px;color:rgba(255,255,255,.75)}
+.top-device.visible{display:flex}
+.top-device .td-item{display:flex;gap:6px;align-items:baseline}
+.top-device .td-label{font-size:10px;text-transform:uppercase;letter-spacing:.8px;color:rgba(255,255,255,.45)}
+.top-device .td-val{font-family:var(--mono);font-size:11.5px;color:#fff}
+.top-spacer{flex:1}
+.top-tag{font-size:10.5px;font-family:var(--mono);color:rgba(255,255,255,.45);letter-spacing:.5px}
+
+.main{flex:1;display:grid;grid-template-columns:340px 1fr;overflow:hidden}
+
+/* ====== SIDEBAR (guided steps) ====== */
+.sidebar{background:var(--surface);border-right:1px solid var(--line);overflow-y:auto;padding:20px 18px 28px}
+.step{position:relative;padding:0 0 22px 34px}
+.step::before{content:'';position:absolute;left:11px;top:26px;bottom:-2px;width:2px;background:var(--line-soft)}
+.step:last-child::before{display:none}
+.step-num{position:absolute;left:0;top:0;width:24px;height:24px;border-radius:50%;background:var(--steel-light);color:var(--steel);font-size:11.5px;font-weight:600;display:flex;align-items:center;justify-content:center;border:1.5px solid #c8d9ef;transition:all .2s}
+.step.done .step-num{background:var(--ok);border-color:var(--ok);color:#fff}
+.step-title{font-size:13px;font-weight:600;color:var(--ink);margin-bottom:2px;padding-top:2px}
+.step-sub{font-size:11.5px;color:var(--muted);margin-bottom:10px}
+
+textarea,input[type=text]{width:100%;font-size:12px;background:#f7f9fc;border:1.5px solid var(--line);border-radius:8px;padding:9px 11px;color:var(--ink);outline:none;transition:border-color .15s,box-shadow .15s;font-family:var(--sans)}
+textarea:focus,input[type=text]:focus{border-color:var(--steel);box-shadow:0 0 0 3px rgba(29,78,137,.1)}
+textarea#diag8-input{font-family:var(--mono);font-size:10.5px;height:140px;resize:vertical;line-height:1.55}
+textarea#error-input{height:62px;resize:none}
+input::placeholder,textarea::placeholder{color:#a7b4c6}
+.field{margin-bottom:10px}
+.field-label{font-size:10.5px;font-weight:600;text-transform:uppercase;letter-spacing:.8px;color:var(--muted);margin-bottom:4px;display:block}
+
+.btn{width:100%;border:none;border-radius:8px;padding:10px 12px;font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:all .15s}
+.btn:active{transform:scale(.985)}
+.btn-primary{background:var(--steel-dark);color:#fff}
+.btn-primary:hover{background:var(--steel)}
+.btn-send{background:#fff;color:var(--ok);border:1.5px solid #69c896}
+.btn-send:hover{background:var(--ok-bg)}
+.btn-copy-report{width:auto;padding:10px 12px;background:#fff;color:var(--muted);border:1.5px solid var(--line)}
+.btn-copy-report:hover{background:var(--steel-light);color:var(--steel);border-color:#c8d9ef}
+.btn-copy-report.copied{color:var(--ok);border-color:#69c896;background:var(--ok-bg)}
+.btn-clear{width:auto;padding:10px 12px;background:#fff;color:var(--muted);border:1.5px solid var(--line)}
+.btn-clear:hover{background:var(--err-bg);color:var(--err);border-color:var(--err-line)}
+.btn-ghost{background:none;border:none;color:var(--steel);font-size:11.5px;font-weight:500;cursor:pointer;padding:4px 0;text-decoration:underline;text-underline-offset:3px;width:auto}
+
+.form-error{display:none;font-size:11.5px;color:var(--err);background:var(--err-bg);border:1px solid var(--err-line);border-radius:7px;padding:7px 10px;margin-bottom:10px}
+
+/* ====== CONTENT ====== */
+.content{overflow-y:auto;padding:24px 28px 48px}
+
+/* Empty state */
+.empty{max-width:520px;margin:80px auto 0;text-align:center;color:var(--muted)}
+.empty-icon{width:72px;height:72px;border-radius:18px;background:var(--surface);border:1px solid var(--line);box-shadow:var(--shadow);display:flex;align-items:center;justify-content:center;margin:0 auto 18px}
+.empty h2{font-size:17px;font-weight:600;color:var(--ink);margin-bottom:6px}
+.empty p{font-size:13px;margin-bottom:18px}
+
+/* ====== VERDICT BANNER (signature) ====== */
+.verdict{background:var(--surface);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow);padding:12px 18px 10px;margin-bottom:10px;position:relative}
+.verdict::before{content:'';position:absolute;left:0;top:0;bottom:0;width:5px;background:var(--ok);border-radius:14px 0 0 14px}
+.verdict.v-err::before{background:var(--err)}
+.verdict.v-warn::before{background:var(--warn)}
+.verdict-top{display:flex;align-items:center;gap:14px;margin-bottom:14px;flex-wrap:wrap}
+.verdict-icon{width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.v-ok .verdict-icon{background:var(--ok-bg)} .v-err .verdict-icon{background:var(--err-bg)} .v-warn .verdict-icon{background:var(--warn-bg)}
+.verdict-title{font-size:19px;font-weight:700;letter-spacing:-.2px}
+.v-ok .verdict-title{color:var(--ok)} .v-err .verdict-title{color:var(--err)} .v-warn .verdict-title{color:var(--warn)}
+.verdict-sub{font-size:12px;color:var(--muted);margin-top:1px}
+.verdict-stats{margin-left:auto;display:flex;gap:8px}
+.vstat{display:flex;align-items:center;gap:6px;font-size:12px;font-weight:600;padding:5px 11px;border-radius:20px}
+.vstat-ok{background:var(--ok-bg);color:var(--ok)}
+.vstat-err{background:var(--err-bg);color:var(--err)}
+.vstat-warn{background:var(--warn-bg);color:var(--warn)}
+.vstat .dot{width:7px;height:7px;border-radius:50%;background:currentColor}
+
+/* check strip */
+.strip{display:flex;gap:3px;height:14px;border-radius:7px;overflow:hidden}
+.seg{flex:1;border-radius:3px;position:relative;cursor:default}
+.seg-ok{background:#34c573}.seg-err{background:#ef5350}.seg-warn{background:#f5a623}
+.seg:hover::after{content:attr(data-tip);position:absolute;bottom:20px;left:50%;transform:translateX(-50%);background:var(--ink);color:#fff;font-size:10.5px;padding:4px 9px;border-radius:6px;white-space:nowrap;z-index:50;pointer-events:none}
+.seg:nth-child(-n+3):hover::after{left:0;transform:none}
+.seg:nth-last-child(-n+3):hover::after{left:auto;right:0;transform:none}
+.strip-legend{display:flex;gap:14px;margin-top:8px;font-size:10.5px;color:var(--muted)}
+.strip-legend span{display:flex;align-items:center;gap:5px}
+.lg-dot{width:8px;height:8px;border-radius:2px}
+
+/* ====== ACTION SUMMARY (two columns) ====== */
+.todo-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:14px;margin-bottom:18px}
+.todo-col{background:var(--surface);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow);overflow:hidden;align-self:start}
+.todo-col-head{padding:9px 16px;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.7px;display:flex;align-items:center;gap:8px}
+.todo-col-head .cnt{margin-left:auto;font-size:11px;font-weight:600;opacity:.75}
+.tch-cust{background:#eef1f5;color:var(--ink-soft)}
+.tch-supp{background:#eef1f5;color:var(--ink-soft)}
+.todo-item{padding:5px 16px;border-bottom:1px solid var(--line-soft)}
+.todo-item:last-child{border-bottom:none}
+.todo-item{display:flex;align-items:baseline;flex-wrap:wrap;gap:4px 8px}
+.todo-what{font-size:12.5px;font-weight:600;color:var(--ink);white-space:nowrap}
+.todo-fix{font-size:12px;color:var(--ink-soft);line-height:1.55}
+.esc-note{color:var(--err);font-weight:500}
+.todo-foot{padding:8px 16px;border-top:1px solid var(--line-soft);background:#f7f9fc;font-size:11.5px;color:var(--muted);display:flex;align-items:center;gap:6px}
+
+/* ====== FILTER ====== */
+.toolbar{display:flex;align-items:center;gap:12px;margin-bottom:12px}
+.toolbar h2{font-size:14px;font-weight:600;color:var(--ink)}
+.toolbar .sp{flex:1}
+.toggle{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--ink-soft);cursor:pointer;user-select:none}
+.toggle input{display:none}
+.tg{width:34px;height:19px;border-radius:10px;background:#cfd8e4;position:relative;transition:background .15s}
+.tg::after{content:'';position:absolute;width:15px;height:15px;border-radius:50%;background:#fff;top:2px;left:2px;transition:left .15s;box-shadow:0 1px 3px rgba(0,0,0,.2)}
+.toggle input:checked + .tg{background:var(--steel)}
+.toggle input:checked + .tg::after{left:17px}
+
+/* ====== SECTION CARDS ====== */
+.sections{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media (max-width:1100px){.sections{grid-template-columns:1fr}}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow);overflow:hidden;align-self:start}
+.card-head{display:flex;align-items:center;gap:10px;padding:11px 16px;border-bottom:1px solid var(--line-soft)}
+.card-icon{width:28px;height:28px;border-radius:8px;background:var(--steel-light);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.card-title{font-size:13px;font-weight:600}
+.card-state{margin-left:auto;font-size:11px;font-weight:600;padding:3px 10px;border-radius:20px}
+.cs-ok{background:var(--ok-bg);color:var(--ok)} .cs-err{background:var(--err-bg);color:var(--err)} .cs-warn{background:var(--warn-bg);color:var(--warn)}
+
+.check{display:grid;grid-template-columns:18px 1fr auto;gap:10px;align-items:center;padding:8px 16px;border-bottom:1px solid var(--line-soft);transition:background .1s}
+.check:last-child{border-bottom:none}
+.check:hover{background:#fafbfd}
+.check.is-hidden{display:none}
+.ck-icon{width:16px;height:16px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.ck-ok{background:var(--ok-bg);color:var(--ok)} .ck-err{background:var(--err-bg);color:var(--err)} .ck-warn{background:var(--warn-bg);color:var(--warn)} .ck-info{background:var(--info-bg);color:var(--info)}
+.ck-label{font-size:12px;color:var(--ink-soft);font-weight:500}
+.ck-value{font-family:var(--mono);font-size:10.5px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:260px;text-align:right}
+.ck-value a{font-family:var(--sans);font-size:11px;text-decoration:none;font-weight:500}
+.check-action{grid-column:1/-1;background:var(--warn-bg);border:1px solid var(--warn-line);border-radius:8px;padding:8px 12px;font-size:11.5px;color:#7a4408;line-height:1.55;display:flex;gap:8px;margin-top:2px}
+.check-action.is-err{background:var(--err-bg);border-color:var(--err-line);color:#8c1f1f}
+.check.has-action{grid-template-rows:auto auto;padding-bottom:10px}
+
+/* ====== COMMAND CHIPS ====== */
+.cmd-section{margin-top:18px;padding-top:16px;border-top:1px solid var(--line)}
+.cmd-title{font-size:10.5px;font-weight:600;text-transform:uppercase;letter-spacing:.8px;color:var(--muted);margin-bottom:4px}
+.cmd-hint{font-size:11px;color:var(--muted);margin-bottom:10px}
+.cmd-chips{display:flex;flex-wrap:wrap;gap:7px}
+.cmd-chip{display:inline-flex;align-items:center;gap:6px;background:#f0f4fa;border:1.5px solid var(--line);border-radius:8px;padding:6px 10px;font-size:11.5px;font-family:var(--mono);color:var(--ink-soft);cursor:pointer;transition:all .15s;user-select:none}
+.cmd-chip:hover{background:var(--steel-light);border-color:#c8d9ef;color:var(--steel)}
+.cmd-chip.copied{background:var(--ok-bg);border-color:var(--ok-line);color:var(--ok)}
+.cmd-chip svg{flex-shrink:0}
+
+/* footer meta */
+.foot{margin-top:18px;font-size:11px;color:var(--muted);text-align:center}
+.foot .mono{font-family:var(--mono)}
+
+/* ====== MODAL ====== */
+.modal-overlay{position:fixed;inset:0;background:rgba(10,20,38,.5);display:flex;align-items:center;justify-content:center;z-index:1000;backdrop-filter:blur(2px)}
+.modal{background:#fff;border-radius:16px;width:440px;max-width:92vw;overflow:hidden;box-shadow:0 24px 60px rgba(10,20,38,.3)}
+.modal-head{padding:18px 20px 0;display:flex;gap:13px;align-items:flex-start}
+.modal-icn{width:38px;height:38px;border-radius:11px;background:var(--warn-bg);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.modal-title{font-size:15px;font-weight:700;color:var(--ink)}
+.modal-sub{font-size:12px;color:var(--muted);margin-top:1px}
+.modal-body{padding:14px 20px 20px}
+.m-issue{display:flex;gap:10px;border-radius:9px;padding:10px 12px;margin-bottom:8px;align-items:flex-start}
+.mi-err{background:var(--err-bg);border:1px solid var(--err-line)} .mi-warn{background:var(--warn-bg);border:1px solid var(--warn-line)}
+.mi-t{font-size:12.5px;font-weight:600} .mi-err .mi-t{color:var(--err)} .mi-warn .mi-t{color:var(--warn)}
+.mi-d{font-size:11.5px;color:var(--ink-soft);margin-top:1px}
+.m-hint{font-size:12px;color:var(--ink-soft);background:#f7f9fc;border-radius:8px;padding:10px 12px;margin:6px 0 14px;line-height:1.6}
+.m-btns{display:flex;gap:9px}
+.m-sec{flex:1;padding:10px;border-radius:8px;border:1.5px solid var(--line);background:#fff;font-size:13px;font-weight:600;color:var(--ink-soft);cursor:pointer}
+.m-pri{flex:1;padding:10px;border-radius:8px;border:none;background:var(--steel-dark);font-size:13px;font-weight:600;color:#fff;cursor:pointer}
+
+.info-modal{width:500px;max-width:95vw}
+.info-steps{list-style:none;margin:10px 0 16px}
+.info-steps li{display:flex;gap:12px;align-items:flex-start;padding:9px 0;border-bottom:1px solid var(--line-soft);font-size:12.5px;color:var(--ink-soft);line-height:1.5}
+.info-steps li:last-child{border-bottom:none}
+.info-step-num{width:22px;height:22px;border-radius:50%;background:var(--steel-light);color:var(--steel);font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
+.btn-howto{display:inline-flex;align-items:center;gap:6px;margin-top:0;vertical-align:middle;margin-left:6px;font-size:11.5px;font-weight:600;color:var(--steel);background:var(--steel-light);border:none;border-radius:6px;padding:5px 10px;cursor:pointer}
+.btn-howto:hover{background:#d5e3f5}
+@media (prefers-reduced-motion: reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+
+<div class="app">
+
+  <!-- TOPBAR -->
+  <div class="topbar">
+    <div class="logo"><div class="logo-mark">D8</div>DIAG8 Analyser</div>
+    <div class="top-divider"></div>
+    <div class="top-device" id="top-device">
+      <div class="td-item"><span class="td-label">Device</span><span class="td-val" id="td-device">—</span></div>
+      <div class="td-item"><span class="td-label">FW</span><span class="td-val" id="td-fw">—</span></div>
+      <div class="td-item"><span class="td-label">VIN</span><span class="td-val" id="td-vin">—</span></div>
+      <div class="td-item" id="td-alias-wrap" style="display:none"><span class="td-label">Alias</span><span class="td-val" id="td-alias">—</span></div>
+      <div class="td-item"><span class="td-label">CID</span><span class="td-val" id="td-cid">—</span></div>
+      <div class="td-item"><span class="td-val" style="color:rgba(255,255,255,.4)" id="td-ts">—</span></div>
+    </div>
+    <div class="top-spacer"></div>
+    <span class="top-tag">Version 1 · by Sven Kutscher</span>
+  </div>
+
+  <div class="main">
+
+    <!-- SIDEBAR : guided steps -->
+    <div class="sidebar">
+
+      <div class="step" id="step1">
+        <div class="step-num">1</div>
+        <div class="step-title">Analyze Diag8</div>
+        <div class="step-sub">Paste the diagnostic string from the device.</div>
+        <div class="field">
+          <textarea id="diag8-input" placeholder="Paste DIAG8 string here…"></textarea>
+        </div>
+        <div class="form-error" id="parse-error" style="display:none"></div>
+        <div style="display:flex;gap:8px">
+          <button class="btn btn-primary" style="flex:1" onclick="runAnalysis()">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+            Analyze
+          </button>
+          <button class="btn btn-clear" title="Clear analysis" onclick="clearAnalysis()">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+          </button>
+        </div>
+        <button class="btn-ghost" onclick="loadSample()">Load example string</button>
+      </div>
+
+      <div class="step" id="step2">
+        <div class="step-num">2</div>
+        <div class="step-title">Customer details</div>
+        <div class="step-sub">Needed only if you escalate to support.</div>
+        <div class="field">
+          <label class="field-label" for="company-input">Company</label>
+          <input id="company-input" type="text" placeholder="Customer company name" oninput="updateHotlinePreview()">
+        </div>
+        <div class="field">
+          <label class="field-label" for="msisdn-input">Identifier/MSISDN (Fleetvisor)</label>
+          <input id="msisdn-input" type="text" placeholder="e.g. +41 79 123 45 67" oninput="updateHotlinePreview()">
+        </div>
+        <div class="field">
+          <label class="field-label" for="error-input">Fehlerbeschreibung / Error desc.</label>
+          <textarea id="error-input" placeholder="Short description of the issue…" oninput="updateHotlinePreview()"></textarea>
+        </div>
+      </div>
+
+      <div class="step" id="step3">
+        <div class="step-num">3</div>
+        <div class="step-title" style="margin-bottom:10px">Send to Customer Support</div>
+        <div class="form-error" id="hotline-error"></div>
+        <div style="display:flex;gap:8px">
+          <button class="btn btn-send" style="flex:1" onclick="sendToHotline()">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+            Send to Customer Support
+          </button>
+          <button class="btn btn-copy-report" id="btn-copy-report" title="Report in Zwischenablage kopieren" onclick="copyReport(this)">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+          </button>
+        </div>
+      </div>
+
+<div class="cmd-section">
+        <div style="display:flex;align-items:baseline;gap:8px;margin-bottom:10px">
+          <div class="cmd-title">Useful Commands</div>
+          <div class="cmd-hint">Click to copy</div>
+        </div>
+        <div class="cmd-chips">
+          <button class="cmd-chip" onclick="copyCmd(this, '!OTA:\ndiag,,,8')" title="Request Diag8">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+            Request Diag8
+          </button>
+          <button class="cmd-chip" onclick="copyCmd(this, '!OTA:\nreboot,1')" title="Reset">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+            Reset
+          </button>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- CONTENT -->
+    <div class="content">
+
+      <!-- EMPTY STATE -->
+      <div class="empty" id="empty-state">
+        <div class="empty-icon">
+          <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="#1d4e89" stroke-width="1.6"><rect x="3" y="3" width="18" height="18" rx="3"/><line x1="8" y1="8" x2="16" y2="8"/><line x1="8" y1="12" x2="16" y2="12"/><line x1="8" y1="16" x2="12" y2="16"/></svg>
+        </div>
+        <h2>No analysis yet</h2>
+        <p>Paste a DIAG8 string on the left and click <strong>Analyze</strong>.<br>All data is processed locally in your browser.</p>
+        <p style="font-size:11.5px;color:#a7b4c6;max-width:420px;margin:0 auto 18px">This tool is an aid, not a complete analysis. Errors may occur and results may be incomplete — always verify critical findings.</p>
+        <button class="btn-ghost" onclick="loadSample()">Or load an example string to try it out</button>
+      </div>
+
+      <!-- RESULTS -->
+      <div id="results" style="display:none">
+
+        <!-- VERDICT -->
+        <div class="verdict" id="verdict">
+          <div class="verdict-top">
+            <div class="verdict-icon" id="verdict-icon"></div>
+            <div>
+              <div class="verdict-title" id="verdict-title">—</div>
+              <div class="verdict-sub" id="verdict-sub" style="display:none"></div>
+            </div>
+            <div class="verdict-stats">
+              <span class="vstat vstat-ok"><span class="dot"></span><span id="cnt-ok">0</span> passed</span>
+              <span class="vstat vstat-warn" id="vstat-warn"><span class="dot"></span><span id="cnt-warn">0</span> warnings</span>
+              <span class="vstat vstat-err" id="vstat-err"><span class="dot"></span><span id="cnt-err">0</span> issues</span>
+            </div>
+          </div>
+          <div class="strip" id="strip"></div>
+
+        </div>
+
+        <!-- WHAT TO DO -->
+        <div class="todo-grid" id="todo" style="display:none"></div>
+
+        <!-- TOOLBAR -->
+        <div class="toolbar">
+          <h2>All checks</h2>
+          <label class="toggle">
+            <input type="checkbox" id="only-problems" checked onchange="applyFilter()">
+            <span class="tg"></span>
+            Show problems only
+          </label>
+        </div>
+
+        <!-- SECTIONS -->
+        <div class="sections" id="sections"></div>
+
+        <div class="foot">Captured <span class="mono" id="foot-ts">—</span> · Generated locally</div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- FMS INFO MODAL -->
+<div id="fms-modal" style="display:none" class="modal-overlay" onclick="if(event.target===this)closeFmsModal()">
+  <div class="modal info-modal">
+    <div class="modal-head">
+      <div class="modal-icn" style="background:var(--err-bg)">
+        <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#8c1f1f" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><polyline points="8 21 12 17 16 21"/><line x1="12" y1="17" x2="12" y2="3"/></svg>
+      </div>
+      <div>
+        <div class="modal-title">FMS Issues</div>
+        <div class="modal-sub">Follow these steps to restore FMS data</div>
+      </div>
+    </div>
+    <div class="modal-body">
+      <ol class="info-steps">
+        <li><span class="info-step-num">1</span><span><strong>Send a Reset command</strong> to the vehicle.</span></li>
+        <li><span class="info-step-num">2</span><span><strong>Send FleetVisor settings</strong> to the vehicle.</span></li>
+        <li><span class="info-step-num">!</span><span>If the issue persists, the vehicle must be checked by a <strong>workshop</strong>.</span></li>
+      </ol>
+      <div style="background:var(--err-bg);border:1px solid var(--err-line);border-radius:8px;padding:10px 14px;font-size:12px;color:#8c1f1f;margin-bottom:14px">
+        <strong>Without FMS, the following features will not work:</strong>
+        <ul style="margin:6px 0 0 16px;line-height:1.8">
+          <li>Tachograph Download</li>
+          <li>Dash Report (consumption data)</li>
+          <li>Fuel level data</li>
+        </ul>
+      </div>
+      <div class="m-btns">
+        <button class="m-pri" onclick="closeFmsModal()">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- DISPLAY INFO MODAL -->
+<div id="display-modal" style="display:none" class="modal-overlay" onclick="if(event.target===this)closeDisplayModal()">
+  <div class="modal info-modal">
+    <div class="modal-head">
+      <div class="modal-icn" style="background:var(--info-bg)">
+        <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#1d4e89" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+      </div>
+      <div>
+        <div class="modal-title">Display Connection Issue</div>
+        <div class="modal-sub">Follow these steps at the vehicle</div>
+      </div>
+    </div>
+    <div class="modal-body">
+      <ol class="info-steps">
+        <li><span class="info-step-num">1</span><span>Check if a display is installed on the vehicle — this cannot be verified remotely.</span></li>
+        <li><span class="info-step-num">2</span><span>If a display is available, <strong>send a reset command</strong> to the device.</span></li>
+        <li><span class="info-step-num">3</span><span><strong>Send FleetVisor settings</strong> to the vehicle.</span></li>
+        <li><span class="info-step-num">4</span><span>Perform a <strong>display cache clean-up</strong>.</span></li>
+        <li><span class="info-step-num">5</span><span><strong>Restart the display.</strong></span></li>
+        <li><span class="info-step-num">!</span><span>If the issue persists after these steps, please contact Customer Support.</span></li>
+      </ol>
+      <div class="m-btns">
+        <button class="m-pri" onclick="closeDisplayModal()">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- INFO MODAL -->
+<div id="info-modal" style="display:none" class="modal-overlay" onclick="if(event.target===this)closeInfoModal()">
+  <div class="modal info-modal">
+    <div class="modal-head">
+      <div class="modal-icn" style="background:var(--info-bg)">
+        <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#1d4e89" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="10" x2="12" y2="18"/><line x1="12" y1="6" x2="12.01" y2="6"/></svg>
+      </div>
+      <div>
+        <div class="modal-title">Driver Instruction – ITS Consent (Smart Tachograph)</div>
+        <div class="modal-sub">Follow these steps with the driver at the vehicle</div>
+      </div>
+    </div>
+    <div class="modal-body">
+      <ol class="info-steps">
+        <li><span class="info-step-num">1</span><span><strong>First card insertion:</strong> check ITS consent message on the tachograph display.</span></li>
+        <li><span class="info-step-num">2</span><span><strong>Read information:</strong> the screen explains that data may be shared for fleet management purposes.</span></li>
+        <li><span class="info-step-num">3</span><span><strong>Choose option:</strong> press <strong>YES</strong> or <strong>NO</strong> — these are the only valid choices.</span></li>
+        <li><span class="info-step-num">4</span><span><strong>Confirm selection</strong> on the tachograph to save the consent status.</span></li>
+        <li><span class="info-step-num">5</span><span><strong>Note:</strong> consent can be changed later in the tachograph settings if needed.</span></li>
+      </ol>
+      <div class="m-btns">
+        <button class="m-pri" onclick="closeInfoModal()">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- PCM BLOCK MODAL -->
+<div id="pcm-modal" style="display:none" class="modal-overlay">
+  <div class="modal">
+    <div class="modal-head">
+      <div class="modal-icn" style="background:var(--info-bg)">
+        <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#1d4e89" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+      </div>
+      <div>
+        <div class="modal-title">Iveco PCM Box</div>
+        <div class="modal-sub">Diagnosis cannot be applied</div>
+      </div>
+    </div>
+    <div class="modal-body">
+      <div class="m-hint">This device is an <strong>Iveco PCM Box</strong>. The DIAG8 analyser cannot be used for this device type. Please contact Customer Support directly if you need assistance.</div>
+      <div class="m-btns">
+        <button class="m-pri" onclick="closePcmModal()">OK</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- WARNING MODAL -->
+<div id="warn-modal" style="display:none" class="modal-overlay">
+  <div class="modal">
+    <div class="modal-head">
+      <div class="modal-icn">
+        <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#b45309" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+      </div>
+      <div>
+        <div class="modal-title">New diagnostic recommended</div>
+        <div class="modal-sub">This analysis may not be reliable</div>
+      </div>
+    </div>
+    <div class="modal-body">
+      <div id="modal-issues"></div>
+      <div class="m-hint">Ask the customer to send a new Diag8 with the <strong>ignition on</strong> and the <strong>engine running</strong>.</div>
+      <div class="m-btns">
+        <button class="m-sec" onclick="closeModal(true)">Analyse anyway</button>
+        <button class="m-pri" onclick="closeModal(false)">Clear &amp; start over</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ================= CONFIG ================= */
+const VIN_MAP = {
+  WMA:'MAN TGX', YS2:'Scania R450', ZCF:'Iveco', XLR:'DAF XF-Series',
+  V1F:'Renault', W1T:'Mercedes-Benz Actros', YV2:'Volvo', WJM:'Iveco',
+  WDB:'Mercedes-Benz Actros', VLU:'Scania', VF6:'Renault'
+};
+const TACHO_MAP = {
+  '040':'VDO Gen2','041':'VDO Gen2','022':'VDO Gen2','014':'VDO Gen1',
+  '030':'VDO Gen1','020':'VDO Gen1',
+  '1619':'Stoneridge Gen2','PABF':'Stoneridge Gen2','1214':'Stoneridge Gen2',
+  'PA88':'Stoneridge Gen2','2424':'Stoneridge Gen2',
+  'P8KS':'Stoneridge Gen1','P8KU':'Stoneridge Gen1'
+};
+const TACHO_PROBLEM  = {};                       // hard errors (reserved)
+const TACHO_WARN_2424 = {'2424':true};           // warning-level tacho
+const DEVICE_FW_MIN = {'3':[22,72],'4':[22,72],'6':[22,78],'9':[23,14]}; // min firmware per device type
+
+const DRIVER_ERRORS = {
+  '006':'Check "Driver Administration" data in FleetVisor (card number, name, etc.)',
+  '054':'Check FleetVisor — driver activity may be Driver 0 or ID > 16777214. Resend Vehicle Admin Settings and reboot device.',
+  '334':'Check "Driver Administration" data in FleetVisor (card number, name, etc.)',
+  '034':'Check "Driver Administration" data in FleetVisor (card number, name, etc.)',
+  '044':'Check "Driver Administration" data in FleetVisor (card number, name, etc.)'
+};
+
+/* ================= PARSING ================= */
+function get(str, pattern){ const m = str.match(pattern); return m ? m[1] : null; }
+
+function parse(raw){
+  const d = {}; d.raw = raw;
+  const s = raw.replace(/\r?\n/g,' ');
+  d.utc   = get(s,/UTC=(\d+)/);
+  d.vlx   = get(s,/\bUTC=\d+\s+\S+=(\d+\.\d+[\w.\-]*)/);
+  d.ui    = get(s,/UI=([\d.]+)/);
+  d.bl    = get(s,/BL=([\d.]+)/);
+  d.cid   = get(s,/CID=(\d+)/);
+  d.svc   = get(s,/Svc=([\d]+)/);
+  d.ign   = get(s,/ignition=(\w+)/);
+  d.pwr   = get(s,/pwr=(\d+)mV/);
+  d.battV = get(s,/batt\(\d+\)=(\d+)mV/);
+  d.battC = get(s,/Cap=(\d+)%/);
+  d.battL = get(s,/Level=([\w_]+)/);
+  d.d8    = get(s,/D8=(\w+)/);
+  d.speed = get(s,/speed\(com\)=(\d+)/);
+  d.dist  = get(s,/total dist\(com\)=(\d+)/);
+  d.fuel  = get(s,/flvl=(\d+)\*0\.4%/);
+  d.fms   = get(s,/(?<![a-zA-Z])FMS=([\w]+)/);
+  d.vin   = get(s,/VINs=([\w,?]+)/);
+  d.driverTacho = get(s,/driver\(tacho\)=(\d+)/);
+  d.tachoConsentFull = s.match(/tacho\((\d+),(\w+)\)/);
+  d.cards = get(s,/cards=([^\s]+)/);
+  d.tdiag = get(s,/TDiag=([^\s]+)/);
+  d.gpsfix    = get(s,/GPS fix=(\d+\/\d+)/);
+  d.gpsfixNeg = get(s,/GPS fix=(-\d+)/);
+  d.lat   = get(s,/lat=(-?\d+)/);
+  d.lon   = get(s,/lon=(-?\d+)/);
+  d.gpsAt = get(s,/lon=-?\d+\s+at\s+(\d+)/);
+  const _btnameRaw = (s.match(/BT:\s*Name=([^\n\r]+?)\s+CID=/) || [])[1] || get(s,/Name=([\w]+)/);
+  d.btname = _btnameRaw ? _btnameRaw.slice(6).trim() : null;
+  d.srcDriver = get(s,/\bdriver\((\w+)\)=/);
+  d.srcSpeed  = get(s,/\bspeed\((\w+)\)=/);
+  d.srcRpm    = get(s,/\bRPM\((\w+)\)=/);
+  d.srcSwitch = get(s,/\bswitch\((\w+)\)=/);
+  d.srcDist   = get(s,/\btotal dist\((\w+)\)=/);
+
+  if (d.vin){ const p = d.vin.split(','); d.vin1 = p[0]||''; d.vin2 = p[1]||''; }
+  if (d.lat && d.lon){ d.latDeg=(parseInt(d.lat)/36000).toFixed(6); d.lonDeg=(parseInt(d.lon)/36000).toFixed(6); }
+  if (d.fuel) d.fuelPct = Math.round(parseInt(d.fuel)*0.4);
+  if (d.dist) d.distKm = Math.round(parseInt(d.dist)/1000).toLocaleString();
+  if (d.tdiag) d.tachoCode = d.tdiag.split(';')[0].trim();
+
+  d.vlxNum = d.vlx ? parseFloat(d.vlx.split('-')[0]) : null;
+  d.vlxClean = d.vlx ? d.vlx.split('-')[0] : null;
+  const deviceMap = {'6':'B4MI 4G','4':'TruckLinc 2G','9':'GV851 - TruckLincV2','3':'OXE2 2G','8':'PCM'};
+  d.deviceType = d.vlxClean ? (deviceMap[d.vlxClean.charAt(0)]||'') : '';
+
+  if (d.cards) d.cardCount = d.cards.split(',').filter(c=>c.includes(':')&&c.split(':')[1].length>0).length;
+
+  if (d.utc){
+    const ts=d.utc, yy='20'+ts.slice(0,2), mm=ts.slice(2,4), dd=ts.slice(4,6), hh=ts.slice(6,8), mi=ts.slice(8,10);
+    try{
+      d.utcDate = new Date(`${yy}-${mm}-${dd}T${hh}:${mi}:00Z`);
+      const diffH = ((new Date()) - d.utcDate)/3600000;
+      d.tsOld = diffH > 24;
+      d.tsFuture = diffH < -0.25;
+      d.tsFormatted = `${yy}-${mm}-${dd} ${hh}:${mi} UTC`;
+    }catch(e){ d.tsOld = true; }
+  }
+  if (d.gpsAt){
+    const g=d.gpsAt;
+    try{
+      const gyy='20'+g.slice(0,2),gmm=g.slice(2,4),gdd=g.slice(4,6),ghh=g.slice(6,8),gmi=g.slice(8,10);
+      d.gpsAtDate = new Date(`${gyy}-${gmm}-${gdd}T${ghh}:${gmi}:00Z`);
+    }catch(e){}
+  }
+  return d;
+}
+
+/* ================= ANALYSIS ================= */
+let lastAnalysis = null;
+let lastSections = null;
+
+function loadSample(){
+  document.getElementById('diag8-input').value =
+    sampleString();
+  runAnalysis();
+}
+function sampleString(){
+  // build a fresh timestamp so the modal does not trigger
+  const n = new Date();
+  const p = x => String(x).padStart(2,'0');
+  const utc = String(n.getUTCFullYear()).slice(2)+p(n.getUTCMonth()+1)+p(n.getUTCDate())+p(n.getUTCHours())+p(n.getUTCMinutes());
+  return `UTC=${utc} VLX=9.22.71 UI=4.1 BL=2.0 CID=482913 Svc=1 ignition=ON pwr=27480mV batt(1)=4120mV Cap=86% Level=GOOD Name=TRUCK_07 D8=OK speed(com)=0 total dist(com)=412385000 flvl=178*0.4% FMS=OK VINs=WMA06XZZ7LP123456,?? driver(tacho)=800 tacho(800,C) cards=1: TDiag=040;V2 GPS fix=9/12 lat=1701360 lon=309240`;
+}
+
+async function runAnalysis(){
+  const inp = document.getElementById('diag8-input');
+  let raw = inp.value.trim();
+  if(!raw){
+    // Try clipboard — if permission is pending, poll for up to 5s after user grants it
+    let clipText = '';
+    try{
+      clipText = await navigator.clipboard.readText();
+    }catch(e){
+      // Permission may have just been granted — retry a few times
+      for(let i=0;i<10;i++){
+        await new Promise(r=>setTimeout(r,500));
+        try{ clipText = await navigator.clipboard.readText(); break; }catch(e2){}
+      }
+    }
+    if(clipText && clipText.trim()){ inp.value = clipText.trim(); raw = clipText.trim(); }
+    if(!raw) return;
+  }
+  const d = parse(raw);
+  if(!d.cid){
+    const errBox = document.getElementById('parse-error');
+    errBox.textContent = 'Das ist keine gültige Diag8 Nachricht, Bitte erneut aus Fleetvisor kopieren und einfügen.';
+    errBox.style.display = 'block';
+    return;
+  }
+  document.getElementById('parse-error').style.display='none';
+  lastAnalysis = d;
+
+  /* PCM block — device type 8 */
+  const devicePrefix = d.vlxClean ? d.vlxClean.charAt(0) : null;
+  if (devicePrefix === '8') {
+    document.getElementById('pcm-modal').style.display='flex';
+    return;
+  }
+
+  const ignOff = d.ign && d.ign !== 'ON';
+  const tsOld  = !!d.tsOld;
+
+  if (ignOff || tsOld){
+    const issues = [];
+    if (ignOff) issues.push({type:'err', title:'Ignition is OFF', desc:'The vehicle must be running during capture.'});
+    if (tsOld)  issues.push({type:'warn', title:'Timestamp outdated', desc:'This Diag8 is more than 24 hours old.'});
+    document.getElementById('modal-issues').innerHTML = issues.map(i=>
+      `<div class="m-issue mi-${i.type}">
+        <svg width="15" height="15" style="flex-shrink:0;margin-top:2px" viewBox="0 0 24 24" fill="none" stroke="${i.type==='err'?'#b91c1c':'#b45309'}" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        <div><div class="mi-t">${i.title}</div><div class="mi-d">${i.desc}</div></div>
+      </div>`).join('');
+    document.getElementById('warn-modal').style.display='flex';
+    return;
+  }
+  renderResults(d);
+}
+
+function closeModal(continueAnyway){
+  document.getElementById('warn-modal').style.display='none';
+  if (continueAnyway) renderResults(lastAnalysis);
+  else { document.getElementById('diag8-input').value=''; lastAnalysis=null; }
+}
+
+function clearAnalysis(){
+  lastAnalysis = null;
+  document.getElementById('diag8-input').value='';
+  document.getElementById('error-input').value='';
+  document.getElementById('results').style.display='none';
+  document.getElementById('empty-state').style.display='block';
+  document.getElementById('top-device').classList.remove('visible');
+  document.getElementById('step1').classList.remove('done');
+  document.getElementById('step3').classList.remove('done');
+  const errEl=document.getElementById('hotline-error');
+  if(errEl) errEl.style.display='none';
+}
+
+/* ck(): one check object — who: 'customer' | 'support' | 'customer-then-support' */
+function ck(label, value, status, action, who, guide){ return {label, value, status, action: action||null, who: who||null, guide: guide||null}; }
+
+function renderResults(d){
+  const sections = [];
+
+  /* ---- BASICS ---- */
+  const tsOk  = !d.tsOld && !d.tsFuture;
+  const cidOk = !!d.cid;
+  const basics = [];
+  let tsStatus, tsAction, tsWho=null;
+  if (d.tsFuture){
+    tsStatus = 'err'; tsWho='support';
+    tsAction = 'The device timestamp is in the future. Please send this case to Customer Support.';
+  } else if (d.tsOld){
+    tsStatus = 'warn'; tsWho='customer';
+    tsAction = 'This Diag8 is outdated. Get a fresh diagnostic string and re-analyse.';
+  } else { tsStatus = 'ok'; tsAction = null; }
+  basics.push(ck('Timestamp (UTC)', d.tsFormatted || d.utc || '—', tsStatus, tsAction, tsWho));
+  /* firmware minimum check per device type */
+  const fwDevicePrefix = d.vlxClean ? d.vlxClean.charAt(0) : null;
+  let fwStatus='info', fwAction=null, fwWho=null;
+  if (d.vlxClean && fwDevicePrefix && DEVICE_FW_MIN[fwDevicePrefix]) {
+    const fwMatch = d.vlxClean.match(/^\d+\.(\d+)\.(\d+)/);
+    if (fwMatch) {
+      const fwMajor=parseInt(fwMatch[1],10), fwMinor=parseInt(fwMatch[2],10);
+      const [minMaj, minMin] = DEVICE_FW_MIN[fwDevicePrefix];
+      const ok = fwMajor>minMaj || (fwMajor===minMaj && fwMinor>=minMin);
+      if (!ok) { fwStatus='err'; fwWho='support'; fwAction='A firmware update is required. Note: Firmware updates must be initiated by Customer Support — please contact them to schedule the update.'; }
+    }
+  }
+  basics.push(ck('Firmware', (d.vlxClean||'—') + (d.deviceType?` · ${d.deviceType}`:''), fwStatus, fwAction, fwWho));
+  basics.push(ck('Alias / CID', (d.btname?d.btname+' / ':'')+(d.cid||'—'), cidOk?'ok':'err',
+    cidOk?null:'The device ID (CID) is missing — please send this case to Customer Support.', cidOk?null:'support'));
+  const uiNoDisplay = d.ui === '0.0.0';
+  basics.push(ck('Display (UI)', d.ui||'—', uiNoDisplay?'err':'ok',
+    uiNoDisplay?'No display connected. Check if a display is installed on the vehicle.':null,
+    uiNoDisplay?'customer':null, uiNoDisplay?'display-connection':null));
+  sections.push({title:'Basics', icon:'doc', checks:basics});
+
+  /* ---- FMS ---- */
+  const vinPrefix = d.vin1 ? d.vin1.slice(0,3) : '';
+  const vehicleMake = VIN_MAP[vinPrefix] || 'Unknown vehicle';
+  const ignOk=d.ign==='ON', vinOk=!!d.vin1&&d.vin1!=='??'&&d.vin1.length>5;
+  const fuelOk=d.fuel!==null, distOk=d.dist!==null;
+  // FMS quality check: >75% zero hex chars = bad signal
+  const fmsVal = d.fms || '';
+  const fmsPresent = !!fmsVal;
+  const fmsZeroPct = fmsVal.length ? (fmsVal.split('').filter(c=>c==='0').length / fmsVal.length) : 1;
+  const fmsBad = ignOk && fmsPresent && fmsZeroPct >= 0.50;
+  const fmsOk = fmsPresent && !fmsBad;
+  let fmsStatus, fmsAction, fmsWho, fmsGuide;
+  if(!ignOk){
+    fmsStatus='info'; fmsAction='No FMS check performed — ignition is OFF.'; fmsWho=null; fmsGuide=null;
+  } else if(!fmsPresent){
+    fmsStatus='err'; fmsAction='No FMS data from the vehicle.'; fmsWho='customer'; fmsGuide='fms-issue';
+  } else if(fmsBad){
+    fmsStatus='err'; fmsAction='FMS signal is very weak. Most FMS features will not work correctly.'; fmsWho='customer'; fmsGuide='fms-issue';
+  } else {
+    fmsStatus='ok'; fmsAction=null; fmsWho=null; fmsGuide=null;
+  }
+  const fms = [];
+  fms.push(ck('Ignition', d.ign||'—', ignOk?'ok':'err',
+    ignOk?null:'Ask the customer to switch the ignition on and send a new Diag8.', ignOk?null:'customer'));
+  fms.push(ck('FMS data', fmsVal||'—', fmsStatus, fmsAction, fmsWho, fmsGuide));
+  fms.push(ck('VIN', d.vin1 ? `${d.vin1} · ${vehicleMake}` : '—', 'info'));
+  fms.push(ck('Fuel level', d.fuel?`${d.fuelPct}%`:'—', 'info'));
+  fms.push(ck('Mileage', d.dist?`${d.distKm} km`:'—', distOk?'ok':'err',
+    distOk?null:'No mileage data from the vehicle — please send this case to Customer Support.', distOk?null:'support'));
+  /* FV default: Speed */
+  const srcSpeedOk = !d.srcSpeed || d.srcSpeed==='com';
+  fms.push(ck('FV default: Speed',
+    `com  |  Current: ${d.srcSpeed||'—'}`,
+    srcSpeedOk?'ok':'warn',
+    srcSpeedOk?null:'Check Fleetvisor vehicle settings and adjust if necessary.',
+    srcSpeedOk?null:'customer'));
+  /* FV default: RPM */
+  const srcRpmOk = !d.srcRpm || d.srcRpm==='fms';
+  fms.push(ck('FV default: RPM',
+    `fms  |  Current: ${d.srcRpm||'—'}`,
+    srcRpmOk?'ok':'warn',
+    srcRpmOk?null:'Check Fleetvisor vehicle settings and adjust if necessary.',
+    srcRpmOk?null:'customer'));
+  /* FV default: Total Distance */
+  const srcDistOk = !d.srcDist || d.srcDist==='com';
+  fms.push(ck('FV default: Total Distance',
+    `com  |  Current: ${d.srcDist||'—'}`,
+    srcDistOk?'ok':'warn',
+    srcDistOk?null:'Check Fleetvisor vehicle settings and adjust if necessary.',
+    srcDistOk?null:'customer'));
+  sections.push({title:'Vehicle Data', icon:'truck', checks:fms});
+
+  /* ---- D8 & TACHO ---- */
+  const d8Ok = d.d8==='OK';
+  const tachoCodeClean = d.tachoCode ? d.tachoCode.toUpperCase() : null;
+  const tachoLabel = tachoCodeClean && TACHO_MAP[tachoCodeClean] ? TACHO_MAP[tachoCodeClean] : null;
+  const tachoHasIssue = tachoCodeClean && TACHO_PROBLEM[tachoCodeClean];
+  const tachoIs2424Warn = tachoCodeClean && TACHO_WARN_2424[tachoCodeClean];
+
+  const tachoKnown = tachoLabel !== null;
+  const consentM = d.tachoConsentFull;
+  const consentVal = consentM ? consentM[1] : null;
+  const consentMode = consentM ? consentM[2] : null;
+  let consentOk=true, consentAction=null, consentGuide=false;
+  if (consentVal && DRIVER_ERRORS[consentVal]){ consentOk=false; consentAction=DRIVER_ERRORS[consentVal]; }
+  else if (consentVal==='3' && (consentMode==='U'||consentMode==='N')){ consentOk=false; consentAction='Driver consent not confirmed. Check the driver consent setting in the tachograph (ITS).'; consentGuide=true; }
+
+  const cardsOk = d.cardCount>0;
+  const isVdoGen2 = tachoLabel==='VDO Gen2';
+
+  const driverTachoOk = d.driverTacho==='800'||d.driverTacho==='080'||d.driverTacho==='880';
+  const driverTachoNeutral = !d.driverTacho||d.driverTacho==='-1'||d.driverTacho==='0';
+  const driverTachoErr = !driverTachoOk && !driverTachoNeutral;
+  const driverTachoAction = driverTachoErr
+    ? (DRIVER_ERRORS[d.driverTacho]||'Check the driver tacho value in FleetVisor. The expected value is 800 or 080.')
+    : null;
+
+  const cardNumbers = d.cards ? d.cards.split(',').filter(c=>c.includes(':')).map(c=>c.split(':').pop()).join(', ') : null;
+  const cardLabel = cardNumbers ? cardNumbers : (d.cardCount?`${d.cardCount} card(s)`:'No card detected');
+
+  let tachoStatus, tachoAction=null, tachoWho=null;
+  if (tachoHasIssue){ tachoStatus='err'; tachoWho='support'; tachoAction='There is a known problem with this tachograph version. Please check with the customer.'; }
+  else if (tachoIs2424Warn){ tachoStatus='warn'; tachoWho='customer'; tachoAction='This tachograph type (2424) has a known compatibility issue. Please discuss a tachograph software update with the workshop.'; }
+  else if (!tachoKnown){ tachoStatus='warn'; tachoWho='support'; tachoAction='Unknown tachograph code — please send this case to Customer Support.'; }
+  else tachoStatus='ok';
+
+  const d8c = [];
+  d8c.push(ck('D8 status', `D8=${d.d8||'—'}`, d8Ok?'ok':'err',
+    d8Ok?null:'Restart the device and request a new Diag8.', d8Ok?null:'customer-then-support'));
+  if (!driverTachoNeutral) d8c.push(ck('Driver (tacho)', d.driverTacho, driverTachoOk?'ok':'err', driverTachoAction, driverTachoOk?null:'customer'));
+  if (isVdoGen2) d8c.push(ck('Driver consent (ITS)', consentM?`tacho(${consentM[1]},${consentM[2]})`:'—', consentOk?'ok':'err', consentAction, consentOk?null:'customer', consentGuide?'its-consent':null));
+  d8c.push(ck('Driver card', cardLabel, cardsOk?'ok':'err',
+    cardsOk?null:'No driver card detected. Ask the driver to insert the driver card into the tachograph.', cardsOk?null:'customer'));
+  d8c.push(ck('Tacho version', tachoCodeClean?`${tachoCodeClean} · ${tachoLabel||'Unknown'}`:'—', tachoStatus, tachoAction, tachoWho));
+  /* FV default: Driver Login Method */
+  const srcDriverOk = !d.srcDriver || d.srcDriver==='tacho';
+  d8c.push(ck('FV default: Driver Login Method',
+    `tacho  |  Current: ${d.srcDriver||'—'}`,
+    srcDriverOk?'ok':'warn',
+    srcDriverOk?null:'Check Fleetvisor vehicle settings and adjust if necessary.',
+    srcDriverOk?null:'customer'));
+  /* FV default: Switch Input */
+  const srcSwitchOk = !d.srcSwitch || d.srcSwitch==='com';
+  d8c.push(ck('FV default: Switch Input',
+    `com  |  Current: ${d.srcSwitch||'—'}`,
+    srcSwitchOk?'ok':'warn',
+    srcSwitchOk?null:'Check Fleetvisor vehicle settings and adjust if necessary.',
+    srcSwitchOk?null:'customer'));
+  sections.push({title:'Tachograph', icon:'tacho', checks:d8c});
+
+  /* ---- GPS ---- */
+  const gpsNeg=!!d.gpsfixNeg;
+  const gpsOk=!gpsNeg && d.gpsfix && !d.gpsfix.startsWith('0/');
+  const coordOk=d.lat&&d.lon;
+  const gps=[];
+  gps.push(ck('GPS fix', gpsNeg?d.gpsfixNeg:(d.gpsfix||'—'), gpsOk?'ok':'err',
+    gpsOk?null:'Check installation position. Restart hardware. Green LED must be permanently on.', gpsOk?null:'customer-then-support'));
+  if (d.deviceType!=='B4MI 4G') gps.push(ck('Antenna','No issues detected','ok'));
+  /* GPS age check — only when ignition ON */
+  if (ignOk && d.utcDate && d.gpsAtDate){
+    const gpsAgeMin = Math.round((d.utcDate - d.gpsAtDate)/60000);
+    if (gpsAgeMin > 30){
+      gps.push(ck('GPS position age', `Last fix ${gpsAgeMin} min ago`, 'warn',
+        `GPS position is outdated. Last fix was ${gpsAgeMin} minutes ago. Check GPS antenna and installation position.`, 'customer-then-support'));
+    } else {
+      gps.push(ck('GPS position age', `${gpsAgeMin} min ago`, 'ok'));
+    }
+  }
+  if (coordOk){
+    gps.push({label:'Location', value:`<a href="https://maps.google.com/?q=${d.latDeg},${d.lonDeg}" target="_blank">${d.latDeg}°, ${d.lonDeg}° — open map ↗</a>`, status:'info', action:null, who:null, html:true, isCoord:true});
+  } else {
+    gps.push(ck('Coordinates','—','err','No position data. Check GPS installation and restart the device.','customer-then-support'));
+  }
+  sections.push({title:'GPS & Location', icon:'globe', checks:gps, gpsCoord:coordOk?{lat:d.latDeg,lon:d.lonDeg}:null});
+
+  /* reorder: Tachograph, Vehicle Data, Basics, GPS */
+  const order = ['Tachograph','Vehicle Data','Basics','GPS & Location'];
+  sections.sort((a,b)=>order.indexOf(a.title)-order.indexOf(b.title));
+
+  render(sections, d);
+}
+
+/* ================= RENDER ================= */
+const ICONS = {
+  doc:'<rect x="4" y="4" width="16" height="16" rx="2"/><line x1="9" y1="9" x2="15" y2="9"/><line x1="9" y1="13" x2="15" y2="13"/>',
+  truck:'<rect x="1" y="3" width="15" height="13" rx="2"/><path d="M16 8h4l3 5v3h-7V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/>',
+  tacho:'<rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="12" cy="12" r="4"/><line x1="12" y1="4" x2="12" y2="8"/>',
+  globe:'<circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>'
+};
+const CK_MARK = {
+  ok:'<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4"><polyline points="20 6 9 17 4 12"/></svg>',
+  err:'<svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>',
+  warn:'<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4"><line x1="12" y1="6" x2="12" y2="14"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>',
+  info:'<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4"><line x1="12" y1="10" x2="12" y2="18"/><line x1="12" y1="6" x2="12.01" y2="6"/></svg>'
+};
+
+function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+function render(sections, d){
+  lastSections = sections;
+  let ok=0, err=0, warn=0;
+  const allChecks = [];
+  sections.forEach(sec=>sec.checks.forEach(c=>{
+    if(c.status==='ok')ok++; else if(c.status==='err')err++; else if(c.status==='warn')warn++;
+    if(c.status!=='info') allChecks.push({...c, section:sec.title});
+  }));
+
+  /* verdict */
+  const v = document.getElementById('verdict');
+  v.classList.remove('v-ok','v-err','v-warn');
+  let vClass, vTitle, vIcon;
+  if (err>0){ vClass='v-err'; vTitle = err===1?'1 issue found':`${err} issues found`; vIcon='<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#b91c1c" stroke-width="2.2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>'; }
+  else if (warn>0){ vClass='v-warn'; vTitle='Device OK with warnings'; vIcon='<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#b45309" stroke-width="2.2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>'; }
+  else { vClass='v-ok'; vTitle='Device looks healthy'; vIcon='<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#15803d" stroke-width="2.2"><circle cx="12" cy="12" r="10"/><polyline points="8 12.5 11 15.5 16 9.5"/></svg>'; }
+  v.classList.add(vClass);
+  document.getElementById('verdict-icon').innerHTML = vIcon;
+  document.getElementById('verdict-title').textContent = vTitle;
+  const cidLabel = (d.btname?d.btname+' / ':'')+(d.cid||'—');
+  document.getElementById('verdict-sub').textContent = `${cidLabel} · ${d.tsFormatted||'—'}`;
+  document.getElementById('cnt-ok').textContent=ok;
+  document.getElementById('cnt-err').textContent=err;
+  document.getElementById('cnt-warn').textContent=warn;
+  document.getElementById('vstat-err').style.display = err>0?'flex':'none';
+  document.getElementById('vstat-warn').style.display = warn>0?'flex':'none';
+
+  /* check strip */
+  document.getElementById('strip').innerHTML = allChecks.map(c=>
+    `<div class="seg seg-${c.status}" data-tip="${esc(c.section)} · ${esc(c.label)}"></div>`).join('');
+
+  /* todo list — split by responsibility */
+  const problems = allChecks.filter(c=>c.status!=='ok');
+  const custItems = problems.filter(p=>p.who==='customer'||p.who==='customer-then-support');
+  const suppItems = problems.filter(p=>p.who==='support'||!p.who);
+  const todo = document.getElementById('todo');
+  if (problems.length){
+    todo.style.display='grid';
+    const itemHtml = p => `<div class="todo-item">
+        <div class="todo-what">${esc(p.section)} — ${esc(p.label)}${p.guide==='its-consent'?` <button class="btn-howto" onclick="openInfoModal()"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="10" x2="12" y2="18"/><line x1="12" y1="6" x2="12.01" y2="6"/></svg>How to fix</button>`:''}${p.guide==='display-connection'?` <button class="btn-howto" onclick="openDisplayModal()"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="10" x2="12" y2="18"/><line x1="12" y1="6" x2="12.01" y2="6"/></svg>How to fix</button>`:''}${p.guide==='fms-issue'?` <button class="btn-howto" onclick="openFmsModal()"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="10" x2="12" y2="18"/><line x1="12" y1="6" x2="12.01" y2="6"/></svg>How to fix</button>`:''}</div>
+        <div class="todo-fix">${p.action?esc(p.action):'Check this value and ask the customer for details if needed.'}${p.who==='customer-then-support'?' <span class="esc-note">If this does not help → send to Customer Support.</span>':''}</div>
+      </div>`;
+    let html = '';
+    if (custItems.length){
+      html += `<div class="todo-col">
+        <div class="todo-col-head tch-cust">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><polyline points="16 11 18 13 22 9"/></svg>
+          Customer can fix<span class="cnt">${custItems.length}</span>
+        </div>
+        ${custItems.map(itemHtml).join('')}
+      </div>`;
+    }
+    if (suppItems.length){
+      html += `<div class="todo-col">
+        <div class="todo-col-head tch-supp">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M3 18v-6a9 9 0 0 1 18 0v6"/><path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3zM3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z"/></svg>
+          Send to Customer Support<span class="cnt">${suppItems.length}</span>
+        </div>
+        ${suppItems.map(itemHtml).join('')}
+        <div class="todo-foot">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+          Use step 3 in the sidebar to send the report
+        </div>
+      </div>`;
+    }
+    todo.innerHTML = html;
+  } else todo.style.display='none';
+
+  /* sections */
+  document.getElementById('sections').innerHTML = sections.map(sec=>{
+    const hasErr = sec.checks.some(c=>c.status==='err');
+    const hasWarn = sec.checks.some(c=>c.status==='warn');
+    const state = hasErr?['cs-err', sec.checks.filter(c=>c.status==='err').length+' issue(s)']
+              : hasWarn?['cs-warn','Warning']
+              : ['cs-ok','All passed'];
+    const rows = sec.checks.map(c=>{
+      const val = c.html ? c.value : esc(c.value||'—');
+      const guideBtn = c.guide==='its-consent'
+        ? `<button class="btn-howto" onclick="openInfoModal()"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="10" x2="12" y2="18"/><line x1="12" y1="6" x2="12.01" y2="6"/></svg>How to fix</button>`
+        : c.guide==='display-connection'
+        ? `<button class="btn-howto" onclick="openDisplayModal()"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="10" x2="12" y2="18"/><line x1="12" y1="6" x2="12.01" y2="6"/></svg>How to fix</button>`
+        : '';
+      const actionHtml = c.action
+        ? `<div class="check-action ${c.status==='err'?'is-err':''}">
+            <svg style="width:14px;height:14px;flex-shrink:0;margin-top:2px" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+            <span>${esc(c.action)}</span></div>`
+        : '';
+      return `<div class="check ${c.action?'has-action':''}" data-status="${c.status}">
+        <span class="ck-icon ck-${c.status}">${CK_MARK[c.status]}</span>
+        <span class="ck-label">${esc(c.label)}</span>
+        <span class="ck-value">${val}</span>
+        ${actionHtml}
+      </div>`;
+    }).join('');
+    return `<div class="card">
+      <div class="card-head">
+        <div class="card-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#1d4e89" stroke-width="2">${ICONS[sec.icon]}</svg></div>
+        <span class="card-title">${esc(sec.title)}</span>
+        <span class="card-state ${state[0]}">${state[1]}</span>
+      </div>
+      ${rows}
+    </div>`;
+  }).join('');
+
+  /* topbar device info */
+  document.getElementById('td-device').textContent = d.deviceType||'—';
+  document.getElementById('td-fw').textContent = d.vlxClean||'—';
+  document.getElementById('td-vin').textContent = d.vin1||'—';
+  document.getElementById('td-cid').textContent = d.cid||'—';
+  if(d.btname){ document.getElementById('td-alias').textContent=d.btname; document.getElementById('td-alias-wrap').style.display='flex'; }
+  else { document.getElementById('td-alias-wrap').style.display='none'; }
+  document.getElementById('td-ts').textContent = d.tsFormatted||'—';
+  document.getElementById('top-device').classList.add('visible');
+
+  document.getElementById('foot-ts').textContent = d.tsFormatted||'—';
+
+  /* reverse geocoding — fill GPS card subtitle if coords available */
+  if (d.latDeg && d.lonDeg){
+    fetch(`https://nominatim.openstreetmap.org/reverse?lat=${d.latDeg}&lon=${d.lonDeg}&format=json`)
+      .then(r=>r.json())
+      .then(geo=>{
+        const addr = geo && geo.display_name ? geo.display_name.split(',').slice(0,3).join(', ') : null;
+        if (addr){
+          const gpsCard = [...document.querySelectorAll('.card')].find(c=>c.querySelector('.card-title')&&c.querySelector('.card-title').textContent==='GPS & Location');
+          if (gpsCard){
+            const head = gpsCard.querySelector('.card-head');
+            const existing = head.querySelector('.card-addr');
+            if (!existing){
+              const addrEl = document.createElement('span');
+              addrEl.className = 'card-addr';
+              addrEl.style.cssText='font-size:11px;color:var(--muted);margin-left:6px;font-weight:400;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:240px';
+              addrEl.textContent = '📍 '+addr;
+              const badge = head.querySelector('.card-state');
+              head.insertBefore(addrEl, badge);
+            }
+          }
+        }
+      }).catch(()=>{});
+  }
+
+  /* mark steps done */
+  document.getElementById('step1').classList.add('done');
+
+  document.getElementById('empty-state').style.display='none';
+  document.getElementById('results').style.display='block';
+  applyFilter();
+  updateHotlinePreview();
+}
+
+function copyCmd(el, text){
+  navigator.clipboard.writeText(text).then(()=>{
+    el.classList.add('copied');
+    const orig = el.innerHTML;
+    el.innerHTML = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg> Copied!';
+    setTimeout(()=>{ el.classList.remove('copied'); el.innerHTML = orig; }, 1500);
+  });
+}
+
+function openFmsModal(){ document.getElementById('fms-modal').style.display='flex'; }
+function closeFmsModal(){ document.getElementById('fms-modal').style.display='none'; }
+function closePcmModal(){ document.getElementById('pcm-modal').style.display='none'; document.getElementById('diag8-input').value=''; lastAnalysis=null; }
+
+function openDisplayModal(){ document.getElementById('display-modal').style.display='flex'; }
+function closeDisplayModal(){ document.getElementById('display-modal').style.display='none'; }
+
+function openInfoModal(){ document.getElementById('info-modal').style.display='flex'; }
+function closeInfoModal(){ document.getElementById('info-modal').style.display='none'; }
+
+function applyFilter(){
+  const only = document.getElementById('only-problems').checked;
+  document.querySelectorAll('.check').forEach(el=>{
+    const st = el.getAttribute('data-status');
+    el.classList.toggle('is-hidden', only && (st==='ok'||st==='info'));
+  });
+}
+
+/* ================= HOTLINE ================= */
+function updateHotlinePreview(){
+  const errEl=document.getElementById('hotline-error');
+  if(errEl) errEl.style.display='none';
+  if (document.getElementById('company-input').value.trim() && document.getElementById('msisdn-input').value.trim())
+    document.getElementById('step2').classList.add('done');
+  else document.getElementById('step2').classList.remove('done');
+}
+
+function buildEmailBody(){
+  const d=lastAnalysis;
+  const msisdn=document.getElementById('msisdn-input').value.trim()||'—';
+  const company=document.getElementById('company-input').value.trim()||'—';
+  const errDesc=document.getElementById('error-input').value.trim()||'—';
+  if(!d) return '';
+
+  const allChecks = [];
+  if(lastSections){
+    lastSections.forEach(sec=>sec.checks.forEach(c=>{ if(c.status==='err'||c.status==='warn') allChecks.push(`• ${sec.title} — ${c.label}`); }));
+  }
+  const errorLines = allChecks.length ? allChecks.join('\n') : '• No issues detected';
+
+  return [
+    'CASE INFORMATION FILLED IN BY CUSTOMER',
+    '======================================',
+    `Company: ${company}`,
+    `MSISDN: ${msisdn}`,
+    `Error desc.:: ${errDesc}`,
+    '',
+    'DEVICE INFO',
+    '-----------',
+    `CID: ${d.cid||'—'} | VIN: ${d.vin1||'—'} | Timestamp (UTC): ${d.utc||'—'} | Firmware: ${d.vlxClean||'—'}${d.deviceType?' ('+d.deviceType+')':''}`,
+    '',
+    'ERROR REPORT AUTOMATICALLY GENERATED',
+    '-------------------------------------',
+    errorLines,
+    '',
+    'RAW DIAG8',
+    '---------',
+    d.raw||'\u2014',
+  ].join('\n');
+}
+
+function copyReport(el){
+  const body = buildEmailBody();
+  if(!body){ alert('Please run analysis first (step 1).'); return; }
+  navigator.clipboard.writeText(body);
+}
+
+function sendToHotline(){
+  const msisdn=document.getElementById('msisdn-input').value.trim();
+  const company=document.getElementById('company-input').value.trim();
+  const errEl=document.getElementById('hotline-error');
+  const missing=[];
+  if(!lastAnalysis) missing.push('Diag8 analysis (step 1)');
+  if(!msisdn) missing.push('MSISDN');
+  if(!company) missing.push('Company');
+  if(missing.length){
+    errEl.textContent=`Please fill in: ${missing.join(' and ')}`;
+    errEl.style.display='block';
+    return;
+  }
+  errEl.style.display='none';
+  document.getElementById('step3').classList.add('done');
+  const alias=(lastAnalysis&&lastAnalysis.btname)?lastAnalysis.btname:null;
+  const subject=encodeURIComponent(`${company} | ${msisdn}${alias?' | Alias: '+alias:''}`);
+  const body=buildEmailBody();
+  if(!body){ errEl.textContent='Could not build email body.'; errEl.style.display='block'; return; }
+  window.location.href=`mailto:hotline.fleetvisor@addsecure.com?subject=${subject}&body=${encodeURIComponent(body)}`;
+}
+</script>
+</body>
+</html>
