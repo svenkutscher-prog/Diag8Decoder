@@ -289,7 +289,7 @@ input::placeholder,textarea::placeholder{color:#a7b4c6}
         </div>
       </div>
 
-<div class="cmd-section">
+      <div class="cmd-section">
         <div style="display:flex;align-items:baseline;gap:8px;margin-bottom:10px">
           <div class="cmd-title">Useful Commands</div>
           <div class="cmd-hint">Click to copy</div>
@@ -340,7 +340,6 @@ input::placeholder,textarea::placeholder{color:#a7b4c6}
             </div>
           </div>
           <div class="strip" id="strip"></div>
-
         </div>
 
         <!-- WHAT TO DO -->
@@ -348,11 +347,11 @@ input::placeholder,textarea::placeholder{color:#a7b4c6}
 
         <!-- TOOLBAR -->
         <div class="toolbar">
-          <h2>All checks</h2>
+          <h2>Problems</h2>
           <label class="toggle">
             <input type="checkbox" id="only-problems" checked onchange="applyFilter()">
             <span class="tg"></span>
-            Show problems only
+            Show all checks
           </label>
         </div>
 
@@ -512,9 +511,9 @@ const TACHO_MAP = {
   'PA88':'Stoneridge Gen2','2424':'Stoneridge Gen2',
   'P8KS':'Stoneridge Gen1','P8KU':'Stoneridge Gen1'
 };
-const TACHO_PROBLEM  = {};                       // hard errors (reserved)
-const TACHO_WARN_2424 = {'2424':true};           // warning-level tacho
-const DEVICE_FW_MIN = {'3':[22,72],'4':[22,72],'6':[22,78],'9':[23,14]}; // min firmware per device type
+const TACHO_PROBLEM  = {};
+const TACHO_WARN_2424 = {'2424':true};
+const DEVICE_FW_MIN = {'3':[22,72],'4':[22,72],'6':[22,78],'9':[23,14]};
 
 const DRIVER_ERRORS = {
   '006':'Check "Driver Administration" data in FleetVisor (card number, name, etc.)',
@@ -523,6 +522,20 @@ const DRIVER_ERRORS = {
   '034':'Check "Driver Administration" data in FleetVisor (card number, name, etc.)',
   '044':'Check "Driver Administration" data in FleetVisor (card number, name, etc.)'
 };
+
+/* ================= HELPERS ================= */
+/* Format a Date object as local time: "HH:MM" */
+function fmtTime(date){
+  return date.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
+}
+
+/* Format a Date object as local date+time: "DD.MM.YYYY HH:MM" */
+function fmtDateTime(date){
+  return date.toLocaleString([], {
+    year:'numeric', month:'2-digit', day:'2-digit',
+    hour:'2-digit', minute:'2-digit'
+  });
+}
 
 /* ================= PARSING ================= */
 function get(str, pattern){ const m = str.match(pattern); return m ? m[1] : null; }
@@ -584,13 +597,15 @@ function parse(raw){
       const diffH = ((new Date()) - d.utcDate)/3600000;
       d.tsOld = diffH > 24;
       d.tsFuture = diffH < -0.25;
-      d.tsFormatted = `${yy}-${mm}-${dd} ${hh}:${mi} UTC`;
+      d.tsFormatted = fmtDateTime(d.utcDate);
     }catch(e){ d.tsOld = true; }
   }
+
   if (d.gpsAt){
-    const g=d.gpsAt;
+    const g = d.gpsAt;
     try{
-      const gyy='20'+g.slice(0,2),gmm=g.slice(2,4),gdd=g.slice(4,6),ghh=g.slice(6,8),gmi=g.slice(8,10);
+      const gyy='20'+g.slice(0,2), gmm=g.slice(2,4), gdd=g.slice(4,6),
+            ghh=g.slice(6,8), gmi=g.slice(8,10);
       d.gpsAtDate = new Date(`${gyy}-${gmm}-${gdd}T${ghh}:${gmi}:00Z`);
     }catch(e){}
   }
@@ -599,15 +614,20 @@ function parse(raw){
 
 /* ================= ANALYSIS ================= */
 let lastAnalysis = null;
+let customerMap = {};
+
+/* Load external customer CC mapping */
+fetch('customers.json')
+  .then(r => r.json())
+  .then(data => { customerMap = data; })
+  .catch(() => { customerMap = {}; });
 let lastSections = null;
 
 function loadSample(){
-  document.getElementById('diag8-input').value =
-    sampleString();
+  document.getElementById('diag8-input').value = sampleString();
   runAnalysis();
 }
 function sampleString(){
-  // build a fresh timestamp so the modal does not trigger
   const n = new Date();
   const p = x => String(x).padStart(2,'0');
   const utc = String(n.getUTCFullYear()).slice(2)+p(n.getUTCMonth()+1)+p(n.getUTCDate())+p(n.getUTCHours())+p(n.getUTCMinutes());
@@ -618,12 +638,10 @@ async function runAnalysis(){
   const inp = document.getElementById('diag8-input');
   let raw = inp.value.trim();
   if(!raw){
-    // Try clipboard — if permission is pending, poll for up to 5s after user grants it
     let clipText = '';
     try{
       clipText = await navigator.clipboard.readText();
     }catch(e){
-      // Permission may have just been granted — retry a few times
       for(let i=0;i<10;i++){
         await new Promise(r=>setTimeout(r,500));
         try{ clipText = await navigator.clipboard.readText(); break; }catch(e2){}
@@ -642,7 +660,6 @@ async function runAnalysis(){
   document.getElementById('parse-error').style.display='none';
   lastAnalysis = d;
 
-  /* PCM block — device type 8 */
   const devicePrefix = d.vlxClean ? d.vlxClean.charAt(0) : null;
   if (devicePrefix === '8') {
     document.getElementById('pcm-modal').style.display='flex';
@@ -686,14 +703,12 @@ function clearAnalysis(){
   if(errEl) errEl.style.display='none';
 }
 
-/* ck(): one check object — who: 'customer' | 'support' | 'customer-then-support' */
 function ck(label, value, status, action, who, guide){ return {label, value, status, action: action||null, who: who||null, guide: guide||null}; }
 
 function renderResults(d){
   const sections = [];
 
   /* ---- BASICS ---- */
-  const tsOk  = !d.tsOld && !d.tsFuture;
   const cidOk = !!d.cid;
   const basics = [];
   let tsStatus, tsAction, tsWho=null;
@@ -704,8 +719,8 @@ function renderResults(d){
     tsStatus = 'warn'; tsWho='customer';
     tsAction = 'This Diag8 is outdated. Get a fresh diagnostic string and re-analyse.';
   } else { tsStatus = 'ok'; tsAction = null; }
-  basics.push(ck('Timestamp (UTC)', d.tsFormatted || d.utc || '—', tsStatus, tsAction, tsWho));
-  /* firmware minimum check per device type */
+  basics.push(ck('Timestamp', d.tsFormatted || d.utc || '—', tsStatus, tsAction, tsWho));
+
   const fwDevicePrefix = d.vlxClean ? d.vlxClean.charAt(0) : null;
   let fwStatus='info', fwAction=null, fwWho=null;
   if (d.vlxClean && fwDevicePrefix && DEVICE_FW_MIN[fwDevicePrefix]) {
@@ -729,9 +744,7 @@ function renderResults(d){
   /* ---- FMS ---- */
   const vinPrefix = d.vin1 ? d.vin1.slice(0,3) : '';
   const vehicleMake = VIN_MAP[vinPrefix] || 'Unknown vehicle';
-  const ignOk=d.ign==='ON', vinOk=!!d.vin1&&d.vin1!=='??'&&d.vin1.length>5;
-  const fuelOk=d.fuel!==null, distOk=d.dist!==null;
-  // FMS quality check: >75% zero hex chars = bad signal
+  const ignOk=d.ign==='ON', distOk=d.dist!==null;
   const fmsVal = d.fms || '';
   const fmsPresent = !!fmsVal;
   const fmsZeroPct = fmsVal.length ? (fmsVal.split('').filter(c=>c==='0').length / fmsVal.length) : 1;
@@ -755,21 +768,18 @@ function renderResults(d){
   fms.push(ck('Fuel level', d.fuel?`${d.fuelPct}%`:'—', 'info'));
   fms.push(ck('Mileage', d.dist?`${d.distKm} km`:'—', distOk?'ok':'err',
     distOk?null:'No mileage data from the vehicle — please send this case to Customer Support.', distOk?null:'support'));
-  /* FV default: Speed */
   const srcSpeedOk = !d.srcSpeed || d.srcSpeed==='com';
   fms.push(ck('FV default: Speed',
     `com  |  Current: ${d.srcSpeed||'—'}`,
     srcSpeedOk?'ok':'warn',
     srcSpeedOk?null:'Check Fleetvisor vehicle settings and adjust if necessary.',
     srcSpeedOk?null:'customer'));
-  /* FV default: RPM */
   const srcRpmOk = !d.srcRpm || d.srcRpm==='fms';
   fms.push(ck('FV default: RPM',
     `fms  |  Current: ${d.srcRpm||'—'}`,
     srcRpmOk?'ok':'warn',
     srcRpmOk?null:'Check Fleetvisor vehicle settings and adjust if necessary.',
     srcRpmOk?null:'customer'));
-  /* FV default: Total Distance */
   const srcDistOk = !d.srcDist || d.srcDist==='com';
   fms.push(ck('FV default: Total Distance',
     `com  |  Current: ${d.srcDist||'—'}`,
@@ -784,7 +794,6 @@ function renderResults(d){
   const tachoLabel = tachoCodeClean && TACHO_MAP[tachoCodeClean] ? TACHO_MAP[tachoCodeClean] : null;
   const tachoHasIssue = tachoCodeClean && TACHO_PROBLEM[tachoCodeClean];
   const tachoIs2424Warn = tachoCodeClean && TACHO_WARN_2424[tachoCodeClean];
-
   const tachoKnown = tachoLabel !== null;
   const consentM = d.tachoConsentFull;
   const consentVal = consentM ? consentM[1] : null;
@@ -795,7 +804,6 @@ function renderResults(d){
 
   const cardsOk = d.cardCount>0;
   const isVdoGen2 = tachoLabel==='VDO Gen2';
-
   const driverTachoOk = d.driverTacho==='800'||d.driverTacho==='080'||d.driverTacho==='880';
   const driverTachoNeutral = !d.driverTacho||d.driverTacho==='-1'||d.driverTacho==='0';
   const driverTachoErr = !driverTachoOk && !driverTachoNeutral;
@@ -820,14 +828,12 @@ function renderResults(d){
   d8c.push(ck('Driver card', cardLabel, cardsOk?'ok':'err',
     cardsOk?null:'No driver card detected. Ask the driver to insert the driver card into the tachograph.', cardsOk?null:'customer'));
   d8c.push(ck('Tacho version', tachoCodeClean?`${tachoCodeClean} · ${tachoLabel||'Unknown'}`:'—', tachoStatus, tachoAction, tachoWho));
-  /* FV default: Driver Login Method */
   const srcDriverOk = !d.srcDriver || d.srcDriver==='tacho';
   d8c.push(ck('FV default: Driver Login Method',
     `tacho  |  Current: ${d.srcDriver||'—'}`,
     srcDriverOk?'ok':'warn',
     srcDriverOk?null:'Check Fleetvisor vehicle settings and adjust if necessary.',
     srcDriverOk?null:'customer'));
-  /* FV default: Switch Input */
   const srcSwitchOk = !d.srcSwitch || d.srcSwitch==='com';
   d8c.push(ck('FV default: Switch Input',
     `com  |  Current: ${d.srcSwitch||'—'}`,
@@ -844,16 +850,19 @@ function renderResults(d){
   gps.push(ck('GPS fix', gpsNeg?d.gpsfixNeg:(d.gpsfix||'—'), gpsOk?'ok':'err',
     gpsOk?null:'Check installation position. Restart hardware. Green LED must be permanently on.', gpsOk?null:'customer-then-support'));
   if (d.deviceType!=='B4MI 4G') gps.push(ck('Antenna','No issues detected','ok'));
-  /* GPS age check — only when ignition ON */
+
+  /* GPS age — show local time of last fix */
   if (ignOk && d.utcDate && d.gpsAtDate){
     const gpsAgeMin = Math.round((d.utcDate - d.gpsAtDate)/60000);
+    const gpsTimeStr = fmtTime(d.gpsAtDate);
     if (gpsAgeMin > 30){
-      gps.push(ck('GPS position age', `Last fix ${gpsAgeMin} min ago`, 'warn',
+      gps.push(ck('GPS position', gpsTimeStr, 'warn',
         `GPS position is outdated. Last fix was ${gpsAgeMin} minutes ago. Check GPS antenna and installation position.`, 'customer-then-support'));
     } else {
-      gps.push(ck('GPS position age', `${gpsAgeMin} min ago`, 'ok'));
+      gps.push(ck('GPS position', gpsTimeStr, 'ok'));
     }
   }
+
   if (coordOk){
     gps.push({label:'Location', value:`<a href="https://maps.google.com/?q=${d.latDeg},${d.lonDeg}" target="_blank">${d.latDeg}°, ${d.lonDeg}° — open map ↗</a>`, status:'info', action:null, who:null, html:true, isCoord:true});
   } else {
@@ -861,7 +870,6 @@ function renderResults(d){
   }
   sections.push({title:'GPS & Location', icon:'globe', checks:gps, gpsCoord:coordOk?{lat:d.latDeg,lon:d.lonDeg}:null});
 
-  /* reorder: Tachograph, Vehicle Data, Basics, GPS */
   const order = ['Tachograph','Vehicle Data','Basics','GPS & Location'];
   sections.sort((a,b)=>order.indexOf(a.title)-order.indexOf(b.title));
 
@@ -915,7 +923,7 @@ function render(sections, d){
   document.getElementById('strip').innerHTML = allChecks.map(c=>
     `<div class="seg seg-${c.status}" data-tip="${esc(c.section)} · ${esc(c.label)}"></div>`).join('');
 
-  /* todo list — split by responsibility */
+  /* todo list */
   const problems = allChecks.filter(c=>c.status!=='ok');
   const custItems = problems.filter(p=>p.who==='customer'||p.who==='customer-then-support');
   const suppItems = problems.filter(p=>p.who==='support'||!p.who);
@@ -974,7 +982,7 @@ function render(sections, d){
       return `<div class="check ${c.action?'has-action':''}" data-status="${c.status}">
         <span class="ck-icon ck-${c.status}">${CK_MARK[c.status]}</span>
         <span class="ck-label">${esc(c.label)}</span>
-        <span class="ck-value">${val}</span>
+        <span class="ck-value">${val}${guideBtn}</span>
         ${actionHtml}
       </div>`;
     }).join('');
@@ -995,12 +1003,13 @@ function render(sections, d){
   document.getElementById('td-cid').textContent = d.cid||'—';
   if(d.btname){ document.getElementById('td-alias').textContent=d.btname; document.getElementById('td-alias-wrap').style.display='flex'; }
   else { document.getElementById('td-alias-wrap').style.display='none'; }
+  /* Topbar timestamp: local date+time, no UTC label */
   document.getElementById('td-ts').textContent = d.tsFormatted||'—';
   document.getElementById('top-device').classList.add('visible');
 
   document.getElementById('foot-ts').textContent = d.tsFormatted||'—';
 
-  /* reverse geocoding — fill GPS card subtitle if coords available */
+  /* reverse geocoding */
   if (d.latDeg && d.lonDeg){
     fetch(`https://nominatim.openstreetmap.org/reverse?lat=${d.latDeg}&lon=${d.lonDeg}&format=json`)
       .then(r=>r.json())
@@ -1024,9 +1033,7 @@ function render(sections, d){
       }).catch(()=>{});
   }
 
-  /* mark steps done */
   document.getElementById('step1').classList.add('done');
-
   document.getElementById('empty-state').style.display='none';
   document.getElementById('results').style.display='block';
   applyFilter();
@@ -1045,18 +1052,18 @@ function copyCmd(el, text){
 function openFmsModal(){ document.getElementById('fms-modal').style.display='flex'; }
 function closeFmsModal(){ document.getElementById('fms-modal').style.display='none'; }
 function closePcmModal(){ document.getElementById('pcm-modal').style.display='none'; document.getElementById('diag8-input').value=''; lastAnalysis=null; }
-
 function openDisplayModal(){ document.getElementById('display-modal').style.display='flex'; }
 function closeDisplayModal(){ document.getElementById('display-modal').style.display='none'; }
-
 function openInfoModal(){ document.getElementById('info-modal').style.display='flex'; }
 function closeInfoModal(){ document.getElementById('info-modal').style.display='none'; }
 
 function applyFilter(){
-  const only = document.getElementById('only-problems').checked;
+  const hide = document.getElementById('only-problems').checked;
+  const sections = document.getElementById('sections');
+  if(sections) sections.style.display = hide ? 'none' : '';
   document.querySelectorAll('.check').forEach(el=>{
     const st = el.getAttribute('data-status');
-    el.classList.toggle('is-hidden', only && (st==='ok'||st==='info'));
+    el.classList.toggle('is-hidden', !hide && (st==='ok'||st==='info'));
   });
 }
 
@@ -1091,7 +1098,7 @@ function buildEmailBody(){
     '',
     'DEVICE INFO',
     '-----------',
-    `CID: ${d.cid||'—'} | VIN: ${d.vin1||'—'} | Timestamp (UTC): ${d.utc||'—'} | Firmware: ${d.vlxClean||'—'}${d.deviceType?' ('+d.deviceType+')':''}`,
+    `CID: ${d.cid||'—'} | VIN: ${d.vin1||'—'} | Timestamp: ${d.tsFormatted||'—'} | Firmware: ${d.vlxClean||'—'}${d.deviceType?' ('+d.deviceType+')':''}`,
     '',
     'ERROR REPORT AUTOMATICALLY GENERATED',
     '-------------------------------------',
@@ -1128,7 +1135,10 @@ function sendToHotline(){
   const subject=encodeURIComponent(`${company} | ${msisdn}${alias?' | Alias: '+alias:''}`);
   const body=buildEmailBody();
   if(!body){ errEl.textContent='Could not build email body.'; errEl.style.display='block'; return; }
-  window.location.href=`mailto:hotline.fleetvisor@addsecure.com?subject=${subject}&body=${encodeURIComponent(body)}`;
+  const cid = lastAnalysis && lastAnalysis.cid ? lastAnalysis.cid : null;
+  const ccEmail = cid && customerMap[cid] ? customerMap[cid] : null;
+  const ccPart = ccEmail ? `&cc=${encodeURIComponent(ccEmail)}` : '';
+  window.location.href=`mailto:hotline.fleetvisor@addsecure.com?subject=${subject}${ccPart}&body=${encodeURIComponent(body)}`;
 }
 </script>
 </body>
