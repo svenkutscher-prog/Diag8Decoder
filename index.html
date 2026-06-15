@@ -617,7 +617,7 @@ let lastAnalysis = null;
 let customerMap = {};
 
 /* Load external customer CC mapping */
-fetch('customers.json')
+fetch('customers.json?v=' + Date.now())
   .then(r => r.json())
   .then(data => { customerMap = data; console.log('customerMap loaded:', customerMap); })
   .catch(err => { customerMap = {}; console.warn('customers.json failed:', err); });
