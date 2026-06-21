@@ -616,11 +616,11 @@ function parse(raw){
 let lastAnalysis = null;
 let customerMap = {};
 
-/* Load external customer CC mapping */
+/* Load external customer CC mapping (silent — no console logging) */
 fetch('customers.json?v=' + Date.now())
   .then(r => r.json())
-  .then(data => { customerMap = data; console.log('customerMap loaded:', customerMap); })
-  .catch(err => { customerMap = {}; console.warn('customers.json failed:', err); });
+  .then(data => { customerMap = data; })
+  .catch(() => { customerMap = {}; });
 let lastSections = null;
 
 function loadSample(){
@@ -701,6 +701,12 @@ function clearAnalysis(){
   document.getElementById('step3').classList.remove('done');
   const errEl=document.getElementById('hotline-error');
   if(errEl) errEl.style.display='none';
+  /* reset company field lock state */
+  const companyInput = document.getElementById('company-input');
+  companyInput.value='';
+  companyInput.readOnly = false;
+  companyInput.style.background = '';
+  companyInput.style.color = '';
 }
 
 function ck(label, value, status, action, who, guide){ return {label, value, status, action: action||null, who: who||null, guide: guide||null}; }
@@ -1009,6 +1015,20 @@ function render(sections, d){
 
   document.getElementById('foot-ts').textContent = d.tsFormatted||'—';
 
+  /* ---- Company auto-fill from customerMap: read-only when matched ---- */
+  const companyInput = document.getElementById('company-input');
+  const custEntry = d.cid && customerMap[d.cid] ? customerMap[d.cid] : null;
+  if (custEntry && custEntry.company){
+    companyInput.value = custEntry.company;
+    companyInput.readOnly = true;
+    companyInput.style.background = '#eef1f5';
+    companyInput.style.color = 'var(--ink-soft)';
+  } else {
+    companyInput.readOnly = false;
+    companyInput.style.background = '';
+    companyInput.style.color = '';
+  }
+
   /* reverse geocoding */
   if (d.latDeg && d.lonDeg){
     fetch(`https://nominatim.openstreetmap.org/reverse?lat=${d.latDeg}&lon=${d.lonDeg}&format=json`)
@@ -1136,8 +1156,7 @@ function sendToHotline(){
   const body=buildEmailBody();
   if(!body){ errEl.textContent='Could not build email body.'; errEl.style.display='block'; return; }
   const cid = lastAnalysis && lastAnalysis.cid ? lastAnalysis.cid : null;
-  const ccEmail = cid && customerMap[cid] ? customerMap[cid] : null;
-  console.log('CID:', cid, '| customerMap:', customerMap, '| ccEmail:', ccEmail);
+  const ccEmail = cid && customerMap[cid] && customerMap[cid].email ? customerMap[cid].email : null;
   const ccPart = ccEmail ? `&cc=${encodeURIComponent(ccEmail)}` : '';
   window.location.href=`mailto:hotline.fleetvisor@addsecure.com?subject=${subject}${ccPart}&body=${encodeURIComponent(body)}`;
 }
