@@ -1,4 +1,4 @@
 {
-  "671": "telematik@schmidt-heilbronn.de",
-  "000": "beispiel@firma.de"
+  "671": { "company": "Schmidt Heilbronn", "email": "telematik@schmidt-heilbronn.de" },
+  "000": { "company": "Beispiel Firma", "email": "beispiel@firma.de" }
 }
