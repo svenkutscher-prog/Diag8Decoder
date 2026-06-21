@@ -222,7 +222,7 @@ input::placeholder,textarea::placeholder{color:#a7b4c6}
       <div class="td-item"><span class="td-val" style="color:rgba(255,255,255,.4)" id="td-ts">—</span></div>
     </div>
     <div class="top-spacer"></div>
-    <span class="top-tag">Version 1.5 · by Sven Kutscher</span>
+    <span class="top-tag">Version 5 · by Sven Kutscher</span>
   </div>
 
   <div class="main">
@@ -576,9 +576,7 @@ fetch('customers.json?v='+Date.now()).then(r=>r.json()).then(data=>{customerMap=
 
 function loadSample(){ document.getElementById('diag8-input').value=sampleString(); runAnalysis(); }
 function sampleString(){
-  const n=new Date(); const p=x=>String(x).padStart(2,'0');
-  const utc=String(n.getUTCFullYear()).slice(2)+p(n.getUTCMonth()+1)+p(n.getUTCDate())+p(n.getUTCHours())+p(n.getUTCMinutes());
-  return `UTC=${utc} VLX=9.22.71 UI=4.1 BL=2.0 CID=482913 Svc=1 ignition=ON pwr=27480mV batt(1)=4120mV Cap=86% Level=GOOD Name=TRUCK_07 D8=OK speed(com)=0 total dist(com)=412385000 flvl=178*0.4% FMS=OK VINs=WMA06XZZ7LP123456,?? driver(tacho)=800 tacho(800,C) cards=1: TDiag=040;V2 GPS fix=9/12 lat=1701360 lon=309240`;
+  return `UTC=260615110312 VLX=6.21.16-REL-x.23.16-0-gf51069e9e hver=6/6 UI=9.3.5 BL=99.9.9 Nav:DLLPTV\nCID=000 Svc=1101110001110010210000100001\nignition=ON pto(ptode)=OFF driver(FMS)=080(-1,14503,0) rxFMS=772376,0,0 pwr=27649mV batt(4)=4094mV D8=NOK,0,0\nspeed(com)=161 RPM(fms)=957 switch(com)=Drive,Drive main(serial)=none,Drive,none buftime(-1)=\ntotal dist(com)=299986290 fuel(0,0,4)=940485,9920,10000 tacho(3,N)=8FF0 FMS=00100F7000F flvl=248*0.4%\nTDiag=041;026;1381.1621343007;00000000009014298/AAA2274800100\ncards=0,0\nVINs=XLRTEF5300G479807\nGPRS=2G26003:"Orange" L"D5AC" C"53F4" 0=10.247.100.170 rxTotal=763 txTotal=3834\nGPS fix=-4 lat=1905626 lon=685981 at 260615110311 queue=0 last tx=260615104332 save=260615104332\nCP=85,,55.7 SE FAR,1893049,707326 (1)\nRTDS(xFB)=0 progress=0 error=0 Time=\nBT: Name=4151CBSILO 2859 CID=671 DevStat=2 ConStat=3  NameRemoteDev= SigLev=0dB\nMOTION: MotionStat=2\nPWR: TRUCK=MAIN BATTERY=FULL Volt=4094mV Cap=101% Level=BL_OVERVOLTAGE Range:[3400,4050] POWER=FULLPOWER\ntasks=0x0000005F7EFDFFF9 idle=61% rxcan0=772376`;
 }
 
 async function runAnalysis(){
