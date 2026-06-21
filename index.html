@@ -169,6 +169,10 @@ input::placeholder,textarea::placeholder{color:#a7b4c6}
 .check-action{grid-column:1/-1;background:var(--warn-bg);border:1px solid var(--warn-line);border-radius:8px;padding:8px 12px;font-size:11.5px;color:#7a4408;line-height:1.55;display:flex;gap:8px;margin-top:2px}
 .check-action.is-err{background:var(--err-bg);border-color:var(--err-line);color:#8c1f1f}
 .check.has-action{grid-template-rows:auto auto;padding-bottom:10px}
+.check[data-status="err"] .ck-label,.check[data-status="err"] .ck-value{color:var(--err)}
+.check[data-status="warn"] .ck-label,.check[data-status="warn"] .ck-value{color:var(--warn)}
+.todo-item.it-err .todo-what,.todo-item.it-err .todo-fix{color:var(--err)}
+.todo-item.it-warn .todo-what,.todo-item.it-warn .todo-fix{color:var(--warn)}
 
 /* ====== COMMAND CHIPS ====== */
 .cmd-section{margin-top:18px;padding-top:16px;border-top:1px solid var(--line)}
@@ -936,7 +940,7 @@ function render(sections, d){
   const todo = document.getElementById('todo');
   if (problems.length){
     todo.style.display='grid';
-    const itemHtml = p => `<div class="todo-item">
+    const itemHtml = p => `<div class="todo-item it-${p.status}">
         <div class="todo-what">${esc(p.section)} — ${esc(p.label)}${p.guide==='its-consent'?` <button class="btn-howto" onclick="openInfoModal()"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="10" x2="12" y2="18"/><line x1="12" y1="6" x2="12.01" y2="6"/></svg>How to fix</button>`:''}${p.guide==='display-connection'?` <button class="btn-howto" onclick="openDisplayModal()"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="10" x2="12" y2="18"/><line x1="12" y1="6" x2="12.01" y2="6"/></svg>How to fix</button>`:''}${p.guide==='fms-issue'?` <button class="btn-howto" onclick="openFmsModal()"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="10" x2="12" y2="18"/><line x1="12" y1="6" x2="12.01" y2="6"/></svg>How to fix</button>`:''}</div>
         <div class="todo-fix">${p.action?esc(p.action):'Check this value and ask the customer for details if needed.'}${p.who==='customer-then-support'?' <span class="esc-note">If this does not help → send to Customer Support.</span>':''}</div>
       </div>`;
@@ -980,12 +984,8 @@ function render(sections, d){
         : c.guide==='display-connection'
         ? `<button class="btn-howto" onclick="openDisplayModal()"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="10" x2="12" y2="18"/><line x1="12" y1="6" x2="12.01" y2="6"/></svg>How to fix</button>`
         : '';
-      const actionHtml = c.action
-        ? `<div class="check-action ${c.status==='err'?'is-err':''}">
-            <svg style="width:14px;height:14px;flex-shrink:0;margin-top:2px" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
-            <span>${esc(c.action)}</span></div>`
-        : '';
-      return `<div class="check ${c.action?'has-action':''}" data-status="${c.status}">
+      const actionHtml = '';
+      return `<div class="check" data-status="${c.status}">
         <span class="ck-icon ck-${c.status}">${CK_MARK[c.status]}</span>
         <span class="ck-label">${esc(c.label)}</span>
         <span class="ck-value">${val}${guideBtn}</span>
