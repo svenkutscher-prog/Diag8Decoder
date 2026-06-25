@@ -46,6 +46,10 @@ button{font-family:var(--sans)}
 .top-device .td-val{font-family:var(--mono);font-size:11.5px;color:#fff}
 .top-spacer{flex:1}
 .top-tag{font-size:10.5px;font-family:var(--mono);color:rgba(255,255,255,.45);letter-spacing:.5px}
+.lang-switcher{display:flex;gap:4px;margin-left:10px}
+.lang-btn{background:none;border:1.5px solid rgba(255,255,255,.18);border-radius:7px;padding:4px 8px;cursor:pointer;line-height:0;transition:all .15s;opacity:.55;display:inline-flex;align-items:center}
+.lang-btn:hover{opacity:1;border-color:rgba(255,255,255,.5);background:rgba(255,255,255,.08)}
+.lang-btn.active{opacity:1;border-color:rgba(255,255,255,.7);background:rgba(255,255,255,.12)}
 
 .main{flex:1;display:grid;grid-template-columns:340px 1fr;overflow:hidden}
 
@@ -222,57 +226,62 @@ input::placeholder,textarea::placeholder{color:#a7b4c6}
       <div class="td-item"><span class="td-val" style="color:rgba(255,255,255,.4)" id="td-ts">—</span></div>
     </div>
     <div class="top-spacer"></div>
-    <span class="top-tag">Version 1.6 · by Sven Kutscher</span>
+    <span class="top-tag" id="top-tag-version">Version 2.0 · by Sven Kutscher</span>
+    <div class="lang-switcher">
+      <button class="lang-btn active" onclick="setLang('en')" id="lang-en" title="English"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 60 30" width="24" height="12"><rect width="60" height="30" fill="#012169"/><path d="M0 0l60 30M60 0L0 30" stroke="#fff" stroke-width="6"/><path d="M0 0l60 30M60 0L0 30" stroke="#C8102E" stroke-width="4"/><path d="M30 0v30M0 15h60" stroke="#fff" stroke-width="10"/><path d="M30 0v30M0 15h60" stroke="#C8102E" stroke-width="6"/></svg></button>
+      <button class="lang-btn" onclick="setLang('de')" id="lang-de" title="Deutsch"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 5 3" width="24" height="14"><rect width="5" height="1" fill="#000"/><rect y="1" width="5" height="1" fill="#D00"/><rect y="2" width="5" height="1" fill="#FFCE00"/></svg></button>
+      <button class="lang-btn" onclick="setLang('pl')" id="lang-pl" title="Polski"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 10" width="24" height="15"><rect width="16" height="5" fill="#fff"/><rect y="5" width="16" height="5" fill="#DC143C"/></svg></button>
+    </div>
   </div>
 
   <div class="main">
     <div class="sidebar">
       <div class="step" id="step1">
         <div class="step-num">1</div>
-        <div class="step-title">Analyze Diag8</div>
-        <div class="step-sub">Paste the diagnostic string from the device.</div>
+        <div class="step-title" data-i18n="step1Title">Analyze Diag8</div>
+        <div class="step-sub" data-i18n="step1Sub">Paste the diagnostic string from the device.</div>
         <div class="field">
-          <textarea id="diag8-input" placeholder="Paste DIAG8 string here…"></textarea>
+          <textarea id="diag8-input" placeholder="Paste DIAG8 string here…" data-i18n-placeholder="diag8Placeholder"></textarea>
         </div>
         <div class="form-error" id="parse-error"></div>
         <div style="display:flex;gap:8px">
           <button class="btn btn-primary" style="flex:1" onclick="runAnalysis()">
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
-            Analyze
+            <span data-i18n="btnAnalyze">Analyze</span>
           </button>
           <button class="btn btn-clear" title="Clear analysis" onclick="clearAnalysis()">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
           </button>
         </div>
-        <button class="btn-ghost" onclick="loadSample()">Load example string</button>
+        <button class="btn-ghost" onclick="loadSample()" data-i18n="btnLoadSample">Load example string</button>
       </div>
 
       <div class="step" id="step2">
         <div class="step-num">2</div>
-        <div class="step-title">Customer details</div>
-        <div class="step-sub">Needed only if you escalate to support.</div>
+        <div class="step-title" data-i18n="step2Title">Customer details</div>
+        <div class="step-sub" data-i18n="step2Sub">Needed only if you escalate to support.</div>
         <div class="field">
-          <label class="field-label" for="company-input">Company</label>
-          <input id="company-input" type="text" placeholder="Customer company name" oninput="updateHotlinePreview()">
+          <label class="field-label" for="company-input" data-i18n="labelCompany">Company</label>
+          <input id="company-input" type="text" placeholder="Customer company name" data-i18n-placeholder="placeholderCompany" oninput="updateHotlinePreview()">
         </div>
         <div class="field">
-          <label class="field-label" for="msisdn-input">Identifier/MSISDN (Fleetvisor)</label>
-          <input id="msisdn-input" type="text" placeholder="e.g. +41 79 123 45 67" oninput="updateHotlinePreview()">
+          <label class="field-label" for="msisdn-input" data-i18n="labelMsisdn">Identifier/MSISDN (Fleetvisor)</label>
+          <input id="msisdn-input" type="text" placeholder="e.g. +41 79 123 45 67" data-i18n-placeholder="placeholderMsisdn" oninput="updateHotlinePreview()">
         </div>
         <div class="field">
-          <label class="field-label" for="error-input">Fehlerbeschreibung / Error desc.</label>
-          <textarea id="error-input" placeholder="Short description of the issue…" oninput="updateHotlinePreview()"></textarea>
+          <label class="field-label" for="error-input" data-i18n="labelErrorDesc">Fehlerbeschreibung / Error desc.</label>
+          <textarea id="error-input" placeholder="Short description of the issue…" data-i18n-placeholder="placeholderError" oninput="updateHotlinePreview()"></textarea>
         </div>
       </div>
 
       <div class="step" id="step3">
         <div class="step-num">3</div>
-        <div class="step-title" style="margin-bottom:10px">Send to Customer Support</div>
+        <div class="step-title" style="margin-bottom:10px" data-i18n="step3Title">Send to Customer Support</div>
         <div class="form-error" id="hotline-error"></div>
         <div style="display:flex;gap:8px">
           <button class="btn btn-send" style="flex:1" onclick="sendToHotline()">
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
-            Send to Customer Support
+            <span data-i18n="btnSend">Send to Customer Support</span>
           </button>
           <button class="btn btn-copy-report" id="btn-copy-report" title="Copy report to clipboard" onclick="copyReport(this)">
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
@@ -282,17 +291,17 @@ input::placeholder,textarea::placeholder{color:#a7b4c6}
 
       <div class="cmd-section">
         <div style="display:flex;align-items:baseline;gap:8px;margin-bottom:10px">
-          <div class="cmd-title">Useful Commands</div>
-          <div class="cmd-hint">Click to copy</div>
+          <div class="cmd-title" data-i18n="cmdSectionTitle">Useful Commands</div>
+          <div class="cmd-hint" data-i18n="cmdHint">Click to copy</div>
         </div>
         <div class="cmd-chips">
           <button class="cmd-chip" onclick="copyCmd(this, '!OTA:\ndiag,,,8')" title="Request Diag8">
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
-            Request Diag8
+            <span data-i18n="cmdRequestDiag8">Request Diag8</span>
           </button>
           <button class="cmd-chip" onclick="copyCmd(this, '!OTA:\nreboot,1')" title="Reset">
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
-            Reset
+            <span data-i18n="cmdReset">Reset</span>
           </button>
         </div>
       </div>
@@ -303,10 +312,10 @@ input::placeholder,textarea::placeholder{color:#a7b4c6}
         <div class="empty-icon">
           <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="#1d4e89" stroke-width="1.6"><rect x="3" y="3" width="18" height="18" rx="3"/><line x1="8" y1="8" x2="16" y2="8"/><line x1="8" y1="12" x2="16" y2="12"/><line x1="8" y1="16" x2="12" y2="16"/></svg>
         </div>
-        <h2>No analysis yet</h2>
-        <p>Paste a DIAG8 string on the left and click <strong>Analyze</strong>.<br>All data is processed locally in your browser.</p>
-        <p style="font-size:11.5px;color:#a7b4c6;max-width:420px;margin:0 auto 18px">This tool is an aid, not a complete analysis. Errors may occur and results may be incomplete — always verify critical findings.</p>
-        <button class="btn-ghost" onclick="loadSample()">Or load an example string to try it out</button>
+        <h2 data-i18n="emptyTitle">No analysis yet</h2>
+        <p data-i18n="emptyBody">Paste a DIAG8 string on the left and click <strong>Analyze</strong>.<br>All data is processed locally in your browser.</p>
+        <p style="font-size:11.5px;color:#a7b4c6;max-width:420px;margin:0 auto 18px" data-i18n="emptyDisclaimer">This tool is an aid, not a complete analysis. Errors may occur and results may be incomplete — always verify critical findings.</p>
+        <button class="btn-ghost" onclick="loadSample()" data-i18n="emptyLoadSample">Or load an example string to try it out</button>
       </div>
 
       <div id="results" style="display:none">
@@ -318,9 +327,9 @@ input::placeholder,textarea::placeholder{color:#a7b4c6}
               <div class="verdict-sub" id="verdict-sub"></div>
             </div>
             <div class="verdict-stats">
-              <span class="vstat vstat-ok"><span class="dot"></span><span id="cnt-ok">0</span> passed</span>
-              <span class="vstat vstat-warn" id="vstat-warn"><span class="dot"></span><span id="cnt-warn">0</span> warnings</span>
-              <span class="vstat vstat-err" id="vstat-err"><span class="dot"></span><span id="cnt-err">0</span> issues</span>
+              <span class="vstat vstat-ok"><span class="dot"></span><span id="cnt-ok">0</span> <span data-i18n="statPassed">passed</span></span>
+              <span class="vstat vstat-warn" id="vstat-warn"><span class="dot"></span><span id="cnt-warn">0</span> <span data-i18n="statWarnings">warnings</span></span>
+              <span class="vstat vstat-err" id="vstat-err"><span class="dot"></span><span id="cnt-err">0</span> <span data-i18n="statIssues">issues</span></span>
             </div>
           </div>
           <div class="strip" id="strip"></div>
@@ -329,16 +338,16 @@ input::placeholder,textarea::placeholder{color:#a7b4c6}
         <div class="todo-grid" id="todo" style="display:none"></div>
 
         <div class="toolbar">
-          <h2>Problems</h2>
+          <h2 data-i18n="toolbarTitle">Problems</h2>
           <label class="toggle">
             <input type="checkbox" id="only-problems" checked onchange="applyFilter()">
             <span class="tg"></span>
-            Show all checks
+            <span data-i18n="toggleShowAll">Show all checks</span>
           </label>
         </div>
 
         <div class="sections" id="sections"></div>
-        <div class="foot">Captured <span class="mono" id="foot-ts">—</span> · Generated locally</div>
+        <div class="foot"><span data-i18n="footCaptured">Captured</span> <span class="mono" id="foot-ts">—</span> <span data-i18n="footGenerated">· Generated locally</span></div>
       </div>
     </div>
   </div>
@@ -469,6 +478,393 @@ input::placeholder,textarea::placeholder{color:#a7b4c6}
 </div>
 
 <script>
+/* ================= i18n ================= */
+var LANG = {
+  en: {
+    step1Title:'Analyze Diag8', step1Sub:'Paste the diagnostic string from the device.',
+    diag8Placeholder:'Paste DIAG8 string here…', btnAnalyze:'Analyze', btnLoadSample:'Load example string',
+    step2Title:'Customer details', step2Sub:'Needed only if you escalate to support.',
+    labelCompany:'Company', placeholderCompany:'Customer company name',
+    labelMsisdn:'Identifier / MSISDN (FleetVisor)', placeholderMsisdn:'e.g. +41 79 123 45 67',
+    labelErrorDesc:'Error description', placeholderError:'Short description of the issue…',
+    step3Title:'Send to Customer Support', btnSend:'Send to Customer Support',
+    cmdSectionTitle:'Useful Commands', cmdHint:'Click to copy',
+    cmdRequestDiag8:'Request Diag8', cmdReset:'Reset',
+    emptyTitle:'No analysis yet',
+    emptyBody:'Paste a DIAG8 string on the left and click Analyze. All data is processed locally in your browser.',
+    emptyDisclaimer:'This tool is an aid, not a complete analysis. Errors may occur and results may be incomplete — always verify critical findings.',
+    emptyLoadSample:'Or load an example string to try it out',
+    statPassed:'passed', statWarnings:'warnings', statIssues:'issues',
+    toolbarTitle:'Problems', toggleShowAll:'Show all checks',
+    footCaptured:'Captured', footGenerated:'· Generated locally',
+    btnCopied:'Copied!',
+    errFillIn:'Please fill in:', errAnd:'and',
+    errNoDiag:'Diag8 analysis (step 1)', errNoDiagFirst:'Please run analysis first (step 1).',
+    errCouldNotBuild:'Could not build email body.',
+    parseError:'This is not a valid Diag8 message. Please copy and paste it again from FleetVisor.',
+    emailSectionCustomer:'CASE INFORMATION FILLED IN BY CUSTOMER',
+    emailSectionDevice:'DEVICE INFO', emailSectionReport:'ERROR REPORT AUTOMATICALLY GENERATED',
+    emailSectionRaw:'RAW DIAG8', emailFieldCompany:'Company', emailFieldMsisdn:'MSISDN',
+    emailFieldErrorDesc:'Error desc.', emailNoIssues:'• No issues detected',
+    todoColCustomer:'Customer can fix', todoColSupport:'Send to Customer Support',
+    todoFootNote:'Use step 3 in the sidebar to send the report',
+    todoDefaultAction:'Check this value and ask the customer for details if needed.',
+    todoEscNote:'If this does not help → send to Customer Support.',
+    btnHowToFix:'How to fix',
+    verdictIssue1:'1 issue found', verdictIssueN:'issues found',
+    verdictWarn:'Device OK with warnings', verdictOk:'Device looks healthy',
+    stateIssues:'issue(s)', stateWarning:'Warning', stateAllPassed:'All passed',
+    fmsTitle:'FMS Issues', fmsSub:'Follow these steps to restore FMS data',
+    fmsStep1:'Send a Reset command to the vehicle.',
+    fmsStep2:'Send FleetVisor settings to the vehicle.',
+    fmsStepX:'If the issue persists, the vehicle must be checked by a workshop.',
+    fmsMissingTitle:'Without FMS, the following features will not work:',
+    fmsMissingItems:['Tachograph Download','Dash Report (consumption data)','Fuel level data'],
+    btnClose:'Close',
+    displayTitle:'Display Connection Issue', displaySub:'Follow these steps at the vehicle',
+    displayStep1:'Check if a display is installed on the vehicle — this cannot be verified remotely.',
+    displayStep2:'If a display is available, send a reset command to the device.',
+    displayStep3:'Send FleetVisor settings to the vehicle.',
+    displayStep4:'Perform a display cache clean-up.',
+    displayStep5:'Restart the display.',
+    displayStepX:'If the issue persists after these steps, please contact Customer Support.',
+    itsTitle:'Driver Instruction – ITS Consent (Smart Tachograph)',
+    itsSub:'If additional company-specific guidance is available, refer to it as needed. Follow these steps with the driver at the vehicle',
+    itsStep1:'First card insertion: check ITS consent message on the tachograph display.',
+    itsStep2:'Read information: the screen explains that data may be shared for fleet management purposes.',
+    itsStep3:'Choose option: press YES or NO — these are the only valid choices.',
+    itsStep4:'Confirm selection on the tachograph to save the consent status.',
+    itsStep5:'Note: consent can be changed later in the tachograph settings if needed.',
+    pcmTitle:'Iveco PCM Box', pcmSub:'Diagnosis cannot be applied',
+    pcmHint:'This device is an Iveco PCM Box. The DIAG8 analyser cannot be used for this device type. Please contact Customer Support directly if you need assistance.',
+    btnOk:'OK',
+    warnTitle:'New diagnostic recommended', warnSub:'This analysis may not be reliable',
+    warnHint:'Ask the customer to send a new Diag8 with the ignition on and the engine running.',
+    btnAnalyseAnyway:'Analyse anyway', btnClearStart:'Clear & start over',
+    warnIgnTitle:'Ignition is OFF', warnIgnDesc:'The vehicle must be running during capture.',
+    warnTsTitle:'Timestamp outdated', warnTsDesc:'This Diag8 is more than 24 hours old.',
+    tdDevice:'Device', tdFw:'FW', tdVin:'VIN', tdAlias:'Alias', tdCid:'CID',
+    versionTag:'Version 2.0 · by Sven Kutscher',
+    actTsFuture:'The device timestamp is in the future. Please send this case to Customer Support.',
+    actTsOld:'This Diag8 is outdated. Get a fresh diagnostic string and re-analyse.',
+    actFwUpdate:'A firmware update is required. Firmware updates must be initiated by Customer Support.',
+    actCidMissing:'The device ID (CID) is missing. Please send this case to Customer Support.',
+    actNoDisplay:t('actNoDisplay'),
+    actFmsOff:'No FMS check performed. Ignition is OFF.',
+    actFmsNoData:'No FMS data from the vehicle.',
+    actFmsWeak:'FMS signal is very weak. Most FMS features will not work correctly.',
+    actIgnOff:t('actIgnOff'),
+    actMileageMissing:'No mileage data from the vehicle. Please send this case to Customer Support.',
+    actFvCheck:t('actFvCheck'),
+    actConsentNotConfirmed:'Driver consent not confirmed. Check the driver consent setting in the tachograph (ITS).',
+    actD8Nok:t('actD8Nok'),
+    actDriverTachoDefault:'Check the driver tacho value in FleetVisor. The expected value is 800 or 080.',
+    actDriverErrGeneral:'Check Driver Administration data in FleetVisor (card number, name, etc.)',
+    actDriverErr054:'Check FleetVisor - driver activity may be Driver 0 or ID > 16777214. Resend Vehicle Admin Settings and reboot device.',
+    actCardMissing:t('actCardMissing'),
+    actTachoKnownIssue:'There is a known problem with this tachograph version. Please check with the customer.',
+    actTacho2424:'This tachograph type (2424) has a known compatibility issue. Please discuss a tachograph software update with the workshop.',
+    actTachoUnknown:'Unknown tachograph code. Please send this case to Customer Support.',
+    actGpsNok:t('actGpsNok'),
+    actGpsOld:'GPS position is outdated. Last fix was %MIN% minutes ago. Check GPS antenna and installation position.',
+    actGpsNoCoord:t('actGpsNoCoord'),
+    actAntennaOk:'No issues detected',
+    actNoCard:'No card detected',
+    actUnknownVehicle:'Unknown vehicle',
+    labelCards:'card(s)',
+  },
+  de: {
+    step1Title:'Diag8 analysieren', step1Sub:'Diagnosestring vom Gerät einfügen.',
+    diag8Placeholder:'DIAG8-String hier einfügen…', btnAnalyze:'Analysieren', btnLoadSample:'Beispielstring laden',
+    step2Title:'Kundendaten', step2Sub:'Nur erforderlich, wenn an den Support eskaliert wird.',
+    labelCompany:'Unternehmen', placeholderCompany:'Name des Unternehmens',
+    labelMsisdn:'Kennung / MSISDN (FleetVisor)', placeholderMsisdn:'z. B. +49 151 123 45 67',
+    labelErrorDesc:'Fehlerbeschreibung', placeholderError:'Kurze Beschreibung des Problems…',
+    step3Title:'An Kundensupport senden', btnSend:'An Kundensupport senden',
+    cmdSectionTitle:'Nützliche Befehle', cmdHint:'Klicken zum Kopieren',
+    cmdRequestDiag8:'Diag8 anfordern', cmdReset:'Reset',
+    emptyTitle:'Noch keine Analyse',
+    emptyBody:'DIAG8-String links einfügen und auf „Analysieren" klicken. Alle Daten werden lokal im Browser verarbeitet.',
+    emptyDisclaimer:'Dieses Tool ist eine Hilfe, keine vollständige Analyse. Fehler können auftreten und Ergebnisse unvollständig sein — kritische Befunde immer prüfen.',
+    emptyLoadSample:'Oder einen Beispielstring laden und ausprobieren',
+    statPassed:'bestanden', statWarnings:'Warnungen', statIssues:'Fehler',
+    toolbarTitle:'Probleme', toggleShowAll:'Alle Prüfungen anzeigen',
+    footCaptured:'Erfasst', footGenerated:'· Lokal generiert',
+    btnCopied:'Kopiert!',
+    errFillIn:'Bitte ausfüllen:', errAnd:'und',
+    errNoDiag:'Diag8-Analyse (Schritt 1)', errNoDiagFirst:'Bitte zuerst die Analyse ausführen (Schritt 1).',
+    errCouldNotBuild:'E-Mail-Text konnte nicht erstellt werden.',
+    parseError:'Dies ist keine gültige Diag8-Nachricht. Bitte erneut aus FleetVisor kopieren und einfügen.',
+    emailSectionCustomer:'ANGABEN VOM KUNDEN',
+    emailSectionDevice:'GERÄTEINFORMATIONEN', emailSectionReport:'AUTOMATISCH GENERIERTER FEHLERBERICHT',
+    emailSectionRaw:'RAW DIAG8', emailFieldCompany:'Unternehmen', emailFieldMsisdn:'MSISDN',
+    emailFieldErrorDesc:'Fehlerbeschr.', emailNoIssues:'• Keine Fehler erkannt',
+    todoColCustomer:'Kunde kann beheben', todoColSupport:'An Kundensupport senden',
+    todoFootNote:'Schritt 3 in der Sidebar nutzen, um den Bericht zu senden',
+    todoDefaultAction:'Diesen Wert prüfen und ggf. den Kunden um Details bitten.',
+    todoEscNote:'Falls das nicht hilft → an Kundensupport senden.',
+    btnHowToFix:'Anleitung',
+    verdictIssue1:'1 Fehler gefunden', verdictIssueN:'Fehler gefunden',
+    verdictWarn:'Gerät OK mit Warnungen', verdictOk:'Gerät sieht gesund aus',
+    stateIssues:'Fehler', stateWarning:'Warnung', stateAllPassed:'Alle bestanden',
+    fmsTitle:'FMS-Probleme', fmsSub:'Folgende Schritte zur Wiederherstellung der FMS-Daten',
+    fmsStep1:'Reset-Befehl an das Fahrzeug senden.',
+    fmsStep2:'FleetVisor-Einstellungen an das Fahrzeug senden.',
+    fmsStepX:'Wenn das Problem weiterhin besteht, muss das Fahrzeug in die Werkstatt.',
+    fmsMissingTitle:'Ohne FMS sind folgende Funktionen nicht verfügbar:',
+    fmsMissingItems:['Tacho-Download','Dash Report (Verbrauchsdaten)','Kraftstoffstanddaten'],
+    btnClose:'Schließen',
+    displayTitle:'Display-Verbindungsproblem', displaySub:'Folgende Schritte am Fahrzeug durchführen',
+    displayStep1:'Prüfen, ob ein Display am Fahrzeug verbaut ist — eine Fernprüfung ist nicht möglich.',
+    displayStep2:'Falls ein Display vorhanden ist, einen Reset-Befehl an das Gerät senden.',
+    displayStep3:'FleetVisor-Einstellungen an das Fahrzeug senden.',
+    displayStep4:'Display-Cache bereinigen.',
+    displayStep5:'Display neu starten.',
+    displayStepX:'Wenn das Problem weiterhin besteht, bitte den Kundensupport kontaktieren.',
+    itsTitle:'Fahreranweisung – ITS-Einwilligung (Smart-Tacho)',
+    itsSub:'Falls unternehmensspezifische Anweisungen vorhanden sind, diese ebenfalls berücksichtigen. Folgende Schritte gemeinsam mit dem Fahrer am Fahrzeug durchführen',
+    itsStep1:'Erste Kartensteckung: ITS-Einwilligungsnachricht auf dem Tachographendisplay prüfen.',
+    itsStep2:'Information lesen: Das Display erklärt, dass Daten für Flottenmanagementzwecke weitergegeben werden können.',
+    itsStep3:'Option wählen: JA oder NEIN drücken — dies sind die einzig gültigen Optionen.',
+    itsStep4:'Auswahl am Tachographen bestätigen, um den Einwilligungsstatus zu speichern.',
+    itsStep5:'Hinweis: Die Einwilligung kann später in den Tachographeneinstellungen geändert werden.',
+    pcmTitle:'Iveco PCM Box', pcmSub:'Diagnose nicht anwendbar',
+    pcmHint:'Dieses Gerät ist eine Iveco PCM Box. Der DIAG8 Analyser kann für diesen Gerätetyp nicht verwendet werden. Bei Bedarf bitte direkt den Kundensupport kontaktieren.',
+    btnOk:'OK',
+    warnTitle:'Neue Diagnose empfohlen', warnSub:'Diese Analyse ist möglicherweise nicht zuverlässig',
+    warnHint:'Den Kunden bitten, einen neuen Diag8 mit eingeschalteter Zündung und laufendem Motor zu senden.',
+    btnAnalyseAnyway:'Trotzdem analysieren', btnClearStart:'Verwerfen & neu starten',
+    warnIgnTitle:'Zündung ist AUS', warnIgnDesc:'Das Fahrzeug muss während der Erfassung laufen.',
+    warnTsTitle:'Zeitstempel veraltet', warnTsDesc:'Dieser Diag8 ist mehr als 24 Stunden alt.',
+    tdDevice:'Gerät', tdFw:'FW', tdVin:'FIN', tdAlias:'Alias', tdCid:'CID',
+    versionTag:'Version 2.0 · von Sven Kutscher',
+    actTsFuture:'Der Gerätezeitstempel liegt in der Zukunft. Bitte diesen Fall an den Kundensupport senden.',
+    actTsOld:'Dieser Diag8 ist veraltet. Neuen Diagnosestring anfordern und erneut analysieren.',
+    actFwUpdate:'Firmware-Update erforderlich. Updates werden vom Kundensupport eingeleitet.',
+    actCidMissing:'Die Geräte-ID (CID) fehlt. Bitte diesen Fall an den Kundensupport senden.',
+    actNoDisplay:'Kein Display verbunden. Prüfen, ob ein Display am Fahrzeug verbaut ist.',
+    actFmsOff:'Kein FMS-Check - Zündung ist AUS.',
+    actFmsNoData:'Keine FMS-Daten vom Fahrzeug.',
+    actFmsWeak:'FMS-Signal sehr schwach. Die meisten FMS-Funktionen werden nicht korrekt arbeiten.',
+    actIgnOff:'Kunden bitten, Zündung einzuschalten und neuen Diag8 zu senden.',
+    actMileageMissing:'Keine Kilometerdaten vom Fahrzeug. Bitte diesen Fall an den Kundensupport senden.',
+    actFvCheck:'FleetVisor-Fahrzeugeinstellungen prüfen und ggf. anpassen.',
+    actConsentNotConfirmed:'Fahrer-Einwilligung nicht bestätigt. Einwilligung im Tachographen prüfen (ITS).',
+    actD8Nok:'Gerät neu starten und neuen Diag8 anfordern.',
+    actDriverTachoDefault:'Tacho-Fahrerwert in FleetVisor prüfen. Erwarteter Wert: 800 oder 080.',
+    actDriverErrGeneral:'Daten der Fahrerverwaltung in FleetVisor prüfen (Kartennummer, Name usw.)',
+    actDriverErr054:'FleetVisor prüfen - Fahreraktivität könnte Fahrer 0 oder ID > 16777214 sein. Fahrzeugeinstellungen erneut senden und Gerät neu starten.',
+    actCardMissing:'Keine Fahrerkarte erkannt. Fahrer bitten, Karte in den Tachographen einzustecken.',
+    actTachoKnownIssue:'Bekanntes Problem mit dieser Tachographen-Version. Bitte mit dem Kunden klären.',
+    actTacho2424:'Dieser Tachograph-Typ (2424) hat ein Kompatibilitätsproblem. Bitte Software-Update mit der Werkstatt besprechen.',
+    actTachoUnknown:'Unbekannter Tachograph-Code. Bitte diesen Fall an den Kundensupport senden.',
+    actGpsNok:'Einbauposition prüfen. Hardware neu starten. Grüne LED muss dauerhaft leuchten.',
+    actGpsOld:'GPS-Position veraltet. Letzter Fix vor %MIN% Minuten. GPS-Antenne und Einbauposition prüfen.',
+    actGpsNoCoord:'Keine Positionsdaten. GPS-Installation prüfen und Gerät neu starten.',
+    actAntennaOk:'Keine Probleme erkannt',
+    actNoCard:'Keine Karte erkannt',
+    actUnknownVehicle:'Unbekanntes Fahrzeug',
+    labelCards:'Karte(n)',
+  },
+  pl: {
+    step1Title:'Analiza Diag8', step1Sub:'Wklej ciąg diagnostyczny z urządzenia.',
+    diag8Placeholder:'Wklej ciąg DIAG8 tutaj…', btnAnalyze:'Analizuj', btnLoadSample:'Załaduj przykładowy ciąg',
+    step2Title:'Dane klienta', step2Sub:'Wymagane tylko w przypadku eskalacji do pomocy technicznej.',
+    labelCompany:'Firma', placeholderCompany:'Nazwa firmy klienta',
+    labelMsisdn:'Identyfikator / MSISDN (FleetVisor)', placeholderMsisdn:'np. +48 601 234 567',
+    labelErrorDesc:'Opis błędu', placeholderError:'Krótki opis problemu…',
+    step3Title:'Wyślij do pomocy technicznej', btnSend:'Wyślij do pomocy technicznej',
+    cmdSectionTitle:'Przydatne polecenia', cmdHint:'Kliknij, aby skopiować',
+    cmdRequestDiag8:'Żądaj Diag8', cmdReset:'Reset',
+    emptyTitle:'Brak analizy',
+    emptyBody:'Wklej ciąg DIAG8 po lewej stronie i kliknij „Analizuj". Wszystkie dane są przetwarzane lokalnie w przeglądarce.',
+    emptyDisclaimer:'To narzędzie jest pomocą, a nie pełną analizą. Mogą wystąpić błędy, a wyniki mogą być niekompletne — zawsze weryfikuj krytyczne ustalenia.',
+    emptyLoadSample:'Lub załaduj przykładowy ciąg, aby wypróbować',
+    statPassed:'zaliczone', statWarnings:'ostrzeżenia', statIssues:'błędy',
+    toolbarTitle:'Problemy', toggleShowAll:'Pokaż wszystkie kontrole',
+    footCaptured:'Zarejestrowano', footGenerated:'· Wygenerowano lokalnie',
+    btnCopied:'Skopiowano!',
+    errFillIn:'Proszę uzupełnić:', errAnd:'i',
+    errNoDiag:'Analiza Diag8 (krok 1)', errNoDiagFirst:'Proszę najpierw uruchomić analizę (krok 1).',
+    errCouldNotBuild:'Nie można utworzyć treści wiadomości e-mail.',
+    parseError:'To nie jest prawidłowa wiadomość Diag8. Skopiuj i wklej ponownie z FleetVisor.',
+    emailSectionCustomer:'INFORMACJE PODANE PRZEZ KLIENTA',
+    emailSectionDevice:'INFORMACJE O URZĄDZENIU', emailSectionReport:'AUTOMATYCZNIE WYGENEROWANY RAPORT BŁĘDÓW',
+    emailSectionRaw:'RAW DIAG8', emailFieldCompany:'Firma', emailFieldMsisdn:'MSISDN',
+    emailFieldErrorDesc:'Opis błędu', emailNoIssues:'• Nie wykryto żadnych problemów',
+    todoColCustomer:'Klient może naprawić', todoColSupport:'Wyślij do pomocy technicznej',
+    todoFootNote:'Użyj kroku 3 na pasku bocznym, aby wysłać raport',
+    todoDefaultAction:'Sprawdź tę wartość i w razie potrzeby poproś klienta o szczegóły.',
+    todoEscNote:'Jeśli to nie pomoże → wyślij do pomocy technicznej.',
+    btnHowToFix:'Jak naprawić',
+    verdictIssue1:'Znaleziono 1 błąd', verdictIssueN:'błędów znaleziono',
+    verdictWarn:'Urządzenie OK z ostrzeżeniami', verdictOk:'Urządzenie wygląda zdrowo',
+    stateIssues:'błąd(ów)', stateWarning:'Ostrzeżenie', stateAllPassed:'Wszystkie zaliczone',
+    fmsTitle:'Problemy z FMS', fmsSub:'Wykonaj poniższe kroki, aby przywrócić dane FMS',
+    fmsStep1:'Wyślij polecenie resetowania do pojazdu.',
+    fmsStep2:'Wyślij ustawienia FleetVisor do pojazdu.',
+    fmsStepX:'Jeśli problem będzie się powtarzał, pojazd musi zostać sprawdzony w warsztacie.',
+    fmsMissingTitle:'Bez FMS następujące funkcje nie będą działać:',
+    fmsMissingItems:['Pobieranie danych tachografu','Raport Dash (dane zużycia)','Dane poziomu paliwa'],
+    btnClose:'Zamknij',
+    displayTitle:'Problem z połączeniem wyświetlacza', displaySub:'Wykonaj poniższe kroki przy pojeździe',
+    displayStep1:'Sprawdź, czy w pojeździe jest zainstalowany wyświetlacz — nie można tego zweryfikować zdalnie.',
+    displayStep2:'Jeśli wyświetlacz jest dostępny, wyślij polecenie resetowania do urządzenia.',
+    displayStep3:'Wyślij ustawienia FleetVisor do pojazdu.',
+    displayStep4:'Wykonaj czyszczenie pamięci podręcznej wyświetlacza.',
+    displayStep5:'Uruchom ponownie wyświetlacz.',
+    displayStepX:'Jeśli problem będzie się powtarzał, skontaktuj się z pomocą techniczną.',
+    itsTitle:'Instrukcja dla kierowcy – zgoda ITS (inteligentny tachograf)',
+    itsSub:'Jeśli dostępne są dodatkowe wytyczne firmy, należy się do nich odnieść. Wykonaj poniższe kroki razem z kierowcą przy pojeździe',
+    itsStep1:'Pierwsze włożenie karty: sprawdź komunikat zgody ITS na wyświetlaczu tachografu.',
+    itsStep2:'Przeczytaj informacje: ekran wyjaśnia, że dane mogą być udostępniane do celów zarządzania flotą.',
+    itsStep3:'Wybierz obcie: TAK - to jedyny prewidiowy wybior',
+    itsStep4:'Potwierdź wybór na tachografie, aby zapisać status zgody.',
+    itsStep5:'Uwaga: zgoda może zostać zmieniona później w ustawieniach tachografu.',
+    pcmTitle:'Iveco PCM Box', pcmSub:'Diagnoza nie może być zastosowana',
+    pcmHint:'To urządzenie to Iveco PCM Box. Analizatora DIAG8 nie można używać dla tego typu urządzenia. W razie potrzeby skontaktuj się bezpośrednio z pomocą techniczną.',
+    btnOk:'OK',
+    warnTitle:'Zalecana nowa diagnostyka', warnSub:'Ta analiza może być niewiarygodna',
+    warnHint:'Poproś klienta o przesłanie nowego Diag8 przy włączonym zapłonie i pracującym silniku.',
+    btnAnalyseAnyway:'Analizuj mimo to', btnClearStart:'Wyczyść i zacznij od nowa',
+    warnIgnTitle:'Zapłon jest WYŁĄCZONY', warnIgnDesc:'Pojazd musi pracować podczas rejestracji.',
+    warnTsTitle:'Znacznik czasu nieaktualny', warnTsDesc:'Ten Diag8 ma ponad 24 godziny.',
+    actTsFuture:'Znacznik czasu urządzenia jest w przyszłości. Prześlij tę sprawę do pomocy technicznej.',
+    actTsOld:'Ten Diag8 jest nieaktualny. Pobierz nowy ciąg diagnostyczny i przeanalizuj ponownie.',
+    actFwUpdate:'Wymagana aktualizacja oprogramowania. Aktualizacje muszą być zlecone przez pomoc techniczną.',
+    actCidMissing:'Brakuje identyfikatora urządzenia (CID). Prześlij tę sprawę do pomocy technicznej.',
+    actNoDisplay:'Brak podłączonego wyświetlacza. Sprawdź, czy wyświetlacz jest zainstalowany w pojezie.',
+    actFmsOff:'Nie przeprowadzono sprawdzenia FMS. Zapłon jest wyłączony.',
+    actFmsNoData:'Brak danych FMS z pojazdu.',
+    actFmsWeak:'Sygnał FMS jest bardzo słaby. Większość funkcji FMS nie będzie działać poprawnie.',
+    actIgnOff:'Poprosi klienta o włączenie zapłonu i wysłanie nowego Diag8.',
+    actMileageMissing:'Brak danych o przebiegu z pojazdu. Prześlij tę sprawę do pomocy technicznej.',
+    actFvCheck:'Sprawdź ustawienia pojazdu w FleetVisor i w razie potrzeby dostosuj.',
+    actConsentNotConfirmed:'Zgoda kierowcy nie została potwierdzona. Sprawdź ustawienie zgody w tachografie (ITS).',
+    actD8Nok:'Uruchom ponownie urządzenie i zażądaj nowego Diag8.',
+    actDriverTachoDefault:'Sprawdź wartość tacho kierowcy w FleetVisor. Oczekiwana wartość: 800 lub 080.',
+    actDriverErrGeneral:'Sprawdź dane administracji kierowcami w FleetVisor (numer karty, imię itp.)',
+    actDriverErr054:'Sprawdź FleetVisor - aktywność kierowcy może być Kierowca 0 lub ID > 16777214. Wyślij ponownie ustawienia i uruchom urządzenie.',
+    actCardMissing:'Nie wykryto karty kierowcy. Poprosi kierowcę o włożenie karty do tachografu.',
+    actTachoKnownIssue:'Istnieje znany problem z tą wersją tachografu. Sprawdź z klientem.',
+    actTacho2424:'Ten typ tachografu (2424) ma znany problem ze zgodnością. Omów aktualizację oprogramowania z warsztatem.',
+    actTachoUnknown:'Nieznany kod tachografu. Prześlij tę sprawę do pomocy technicznej.',
+    actGpsNok:'Sprawdź pozycję montażu. Uruchom ponownie sprzęt. Zielona dioda LED musi świecić ciągle.',
+    actGpsOld:'Pozycja GPS jest nieaktualna. Ostatni fix był %MIN% minut temu. Sprawdź antenę GPS i pozycję montażu.',
+    actGpsNoCoord:'Brak danych o pozycji. Sprawdź instalację GPS i uruchom ponownie urządzenie.',
+    actAntennaOk:'Nie wykryto żadnych problemów',
+    actNoCard:'Nie wykryto karty',
+    actUnknownVehicle:'Nieznany pojazd',
+    labelCards:'karta(y)',
+    tdDevice:'Urządzenie', tdFw:'FW', tdVin:'VIN', tdAlias:'Alias', tdCid:'CID',
+    versionTag:'Wersja 2.0 · autor: Sven Kutscher',
+  }
+};
+
+var currentLang = 'en';
+
+function setLang(lang){
+  if(!LANG||!LANG[lang]) return;
+  currentLang = lang;
+  // update active button
+  ['en','de','pl'].forEach(l=>{
+    document.getElementById('lang-'+l).classList.toggle('active', l===lang);
+  });
+  applyI18n();
+  // re-render modals with new language
+  renderModals();
+}
+
+function t(key){ if(!LANG) return key; var s=LANG[currentLang]||LANG.en; return s&&s[key]!==undefined?s[key]:key; }
+
+function DRIVER_ERRORS(code){
+  if(!code) return null;
+  if(code==='054') return t('actDriverErr054');
+  if(code==='006'||code==='334'||code==='034'||code==='044') return t('actDriverErrGeneral');
+  return null;
+}
+
+function applyI18n(){
+  if(!LANG) return;
+  var strings = LANG[currentLang] || LANG.en;
+  // text content
+  document.querySelectorAll('[data-i18n]').forEach(el=>{
+    const key = el.getAttribute('data-i18n');
+    if(strings[key] !== undefined) el.textContent = strings[key];
+  });
+  // placeholders
+  document.querySelectorAll('[data-i18n-placeholder]').forEach(el=>{
+    const key = el.getAttribute('data-i18n-placeholder');
+    if(strings[key] !== undefined) el.placeholder = strings[key];
+  });
+  // version tag
+  document.getElementById('top-tag-version').textContent = strings.versionTag || '';
+  // topbar device labels
+  ['tdDevice','tdFw','tdVin','tdAlias','tdCid'].forEach(k=>{
+    const id = k.replace('td','td-').toLowerCase().replace('tddevice','td-device').replace('tdfw','td-fw').replace('tdvin','td-vin').replace('tdalias','td-alias').replace('tdcid','td-cid');
+  });
+  document.querySelector('#top-device .td-item:nth-child(1) .td-label').textContent = strings.tdDevice;
+  document.querySelector('#top-device .td-item:nth-child(2) .td-label').textContent = strings.tdFw;
+  document.querySelector('#top-device .td-item:nth-child(3) .td-label').textContent = strings.tdVin;
+  document.querySelector('#td-alias-wrap .td-label').textContent = strings.tdAlias;
+  document.querySelector('#top-device .td-item:nth-child(5) .td-label').textContent = strings.tdCid;
+}
+
+function renderModals(){
+  if(!LANG) return;
+  var s = LANG[currentLang] || LANG.en;
+  // FMS modal
+  document.querySelector('#fms-modal .modal-title').textContent = s.fmsTitle;
+  document.querySelector('#fms-modal .modal-sub').textContent = s.fmsSub;
+  const fmsSteps = document.querySelectorAll('#fms-modal .info-steps li span:last-child');
+  if(fmsSteps[0]) fmsSteps[0].innerHTML = `<strong>${s.fmsStep1.split(' ').slice(0,3).join(' ')}</strong> ${s.fmsStep1.split(' ').slice(3).join(' ')}`;
+  if(fmsSteps[1]) fmsSteps[1].innerHTML = `<strong>${s.fmsStep2.split(' ').slice(0,2).join(' ')}</strong> ${s.fmsStep2.split(' ').slice(2).join(' ')}`;
+  if(fmsSteps[2]) fmsSteps[2].textContent = s.fmsStepX;
+  const fmsMissingTitle = document.querySelector('#fms-modal .modal-body > div > strong');
+  if(fmsMissingTitle) fmsMissingTitle.textContent = s.fmsMissingTitle;
+  const fmsMissingItems = document.querySelectorAll('#fms-modal .modal-body > div ul li');
+  s.fmsMissingItems.forEach((item,i)=>{ if(fmsMissingItems[i]) fmsMissingItems[i].textContent = item; });
+  document.querySelector('#fms-modal .m-pri').textContent = s.btnClose;
+
+  // Display modal
+  document.querySelector('#display-modal .modal-title').textContent = s.displayTitle;
+  document.querySelector('#display-modal .modal-sub').textContent = s.displaySub;
+  const dispSteps = document.querySelectorAll('#display-modal .info-steps li span:last-child');
+  if(dispSteps[0]) dispSteps[0].textContent = s.displayStep1;
+  if(dispSteps[1]) dispSteps[1].innerHTML = s.displayStep2.replace('send a reset command','<strong>send a reset command</strong>').replace('Reset-Befehl','<strong>Reset-Befehl</strong>').replace('polecenie resetowania','<strong>polecenie resetowania</strong>');
+  if(dispSteps[2]) dispSteps[2].innerHTML = s.displayStep3.replace('Send FleetVisor settings','<strong>Send FleetVisor settings</strong>').replace('FleetVisor-Einstellungen','<strong>FleetVisor-Einstellungen</strong>').replace('ustawienia FleetVisor','<strong>ustawienia FleetVisor</strong>');
+  if(dispSteps[3]) dispSteps[3].innerHTML = s.displayStep4.replace('display cache clean-up','<strong>display cache clean-up</strong>').replace('Display-Cache','<strong>Display-Cache</strong>').replace('czyszczenie','<strong>czyszczenie</strong>');
+  if(dispSteps[4]) dispSteps[4].innerHTML = `<strong>${s.displayStep5.replace('.','')}</strong>`;
+  if(dispSteps[5]) dispSteps[5].textContent = s.displayStepX;
+  document.querySelector('#display-modal .m-pri').textContent = s.btnClose;
+
+  // ITS modal
+  document.querySelector('#info-modal .modal-title').textContent = s.itsTitle;
+  document.querySelector('#info-modal .modal-sub').textContent = s.itsSub;
+  const itsSteps = document.querySelectorAll('#info-modal .info-steps li span:last-child');
+  if(itsSteps[0]) itsSteps[0].innerHTML = `<strong>${s.itsStep1.split(':')[0]}:</strong>${s.itsStep1.includes(':')?s.itsStep1.split(':').slice(1).join(':'):''}`;
+  if(itsSteps[1]) itsSteps[1].innerHTML = `<strong>${s.itsStep2.split(':')[0]}:</strong>${s.itsStep2.includes(':')?s.itsStep2.split(':').slice(1).join(':'):''}`;
+  if(itsSteps[2]) itsSteps[2].innerHTML = `<strong>${s.itsStep3.split(':')[0]}:</strong>${s.itsStep3.includes(':')?s.itsStep3.split(':').slice(1).join(':'):''}`;
+  if(itsSteps[3]) itsSteps[3].innerHTML = `<strong>${s.itsStep4.split(' ').slice(0,1).join(' ')}</strong> ${s.itsStep4.split(' ').slice(1).join(' ')}`;
+  if(itsSteps[4]) itsSteps[4].textContent = s.itsStep5;
+  document.querySelector('#info-modal .m-pri').textContent = s.btnClose;
+
+  // PCM modal
+  document.querySelector('#pcm-modal .modal-title').textContent = s.pcmTitle;
+  document.querySelector('#pcm-modal .modal-sub').textContent = s.pcmSub;
+  document.querySelector('#pcm-modal .m-hint').innerHTML = s.pcmHint.replace('Iveco PCM Box','<strong>Iveco PCM Box</strong>');
+  document.querySelector('#pcm-modal .m-pri').textContent = s.btnOk;
+
+  // Warn modal
+  document.querySelector('#warn-modal .modal-title').textContent = s.warnTitle;
+  document.querySelector('#warn-modal .modal-sub').textContent = s.warnSub;
+  document.querySelector('#warn-modal .m-hint').innerHTML = s.warnHint.replace('ignition on','<strong>ignition on</strong>').replace('engine running','<strong>engine running</strong>').replace('Zündung','<strong>Zündung</strong>').replace('laufendem Motor','<strong>laufendem Motor</strong>').replace('zapłonie','<strong>zapłonie</strong>').replace('pracującym silniku','<strong>pracującym silniku</strong>');
+  document.querySelector('#warn-modal .m-sec').textContent = s.btnAnalyseAnyway;
+  document.querySelector('#warn-modal .m-pri').textContent = s.btnClearStart;
+}
+
+document.addEventListener('DOMContentLoaded', ()=>{ if(typeof LANG!=='undefined'){ applyI18n(); renderModals(); } });
+
 const VIN_MAP = {
   WMA:'MAN TGX', YS2:'Scania R450', ZCF:'Iveco', XLR:'DAF XF-Series',
   V1F:'Renault', W1T:'Mercedes-Benz Actros', YV2:'Volvo', WJM:'Iveco',
@@ -485,13 +881,6 @@ const TACHO_PROBLEM  = {};
 const TACHO_WARN_2424 = {'2424':true};
 const DEVICE_FW_MIN = {'3':[22,72],'4':[22,72],'6':[22,78],'9':[23,14]};
 
-const DRIVER_ERRORS = {
-  '006':'Check "Driver Administration" data in FleetVisor (card number, name, etc.)',
-  '054':'Check FleetVisor — driver activity may be Driver 0 or ID > 16777214. Resend Vehicle Admin Settings and reboot device.',
-  '334':'Check "Driver Administration" data in FleetVisor (card number, name, etc.)',
-  '034':'Check "Driver Administration" data in FleetVisor (card number, name, etc.)',
-  '044':'Check "Driver Administration" data in FleetVisor (card number, name, etc.)'
-};
 
 function fmtTime(date){ return date.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}); }
 function fmtDateTime(date){ return date.toLocaleString([],{year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'}); }
@@ -568,9 +957,9 @@ function parse(raw){
   return d;
 }
 
-let lastAnalysis=null;
-let customerMap={};
-let lastSections=null;
+var lastAnalysis=null;
+var customerMap={};
+var lastSections=null;
 
 fetch('customers.json?v='+Date.now()).then(r=>r.json()).then(data=>{customerMap=data;}).catch(()=>{customerMap={};});
 
@@ -606,8 +995,8 @@ async function runAnalysis(){
 
   if(ignOff||tsOld){
     const issues=[];
-    if(ignOff) issues.push({type:'err',title:'Ignition is OFF',desc:'The vehicle must be running during capture.'});
-    if(tsOld)  issues.push({type:'warn',title:'Timestamp outdated',desc:'This Diag8 is more than 24 hours old.'});
+    if(ignOff) issues.push({type:'err',title:t('warnIgnTitle'),desc:t('warnIgnDesc')});
+    if(tsOld)  issues.push({type:'warn',title:t('warnTsTitle'),desc:t('warnTsDesc')});
     document.getElementById('modal-issues').innerHTML=issues.map(i=>
       `<div class="m-issue mi-${i.type}">
         <svg width="15" height="15" style="flex-shrink:0;margin-top:2px" viewBox="0 0 24 24" fill="none" stroke="${i.type==='err'?'#b91c1c':'#b45309'}" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
@@ -642,14 +1031,16 @@ function clearAnalysis(){
 
 function ck(label,value,status,action,who,guide){ return {label,value,status,action:action||null,who:who||null,guide:guide||null}; }
 
+
+
 function renderResults(d){
   const sections=[];
 
   /* BASICS */
   const basics=[];
   let tsStatus,tsAction,tsWho=null;
-  if(d.tsFuture){ tsStatus='err'; tsWho='support'; tsAction='The device timestamp is in the future. Please send this case to Customer Support.'; }
-  else if(d.tsOld){ tsStatus='warn'; tsWho='customer'; tsAction='This Diag8 is outdated. Get a fresh diagnostic string and re-analyse.'; }
+  if(d.tsFuture){ tsStatus='err'; tsWho='support'; tsAction=t('actTsFuture'); }
+  else if(d.tsOld){ tsStatus='warn'; tsWho='customer'; tsAction=t('actTsOld'); }
   else{ tsStatus='ok'; tsAction=null; }
   basics.push(ck('Timestamp',d.tsFormatted||d.utc||'—',tsStatus,tsAction,tsWho));
 
@@ -661,50 +1052,50 @@ function renderResults(d){
       const fwMajor=parseInt(fwMatch[1],10), fwMinor=parseInt(fwMatch[2],10);
       const [minMaj,minMin]=DEVICE_FW_MIN[fwDevicePrefix];
       const ok=fwMajor>minMaj||(fwMajor===minMaj&&fwMinor>=minMin);
-      if(!ok){ fwStatus='err'; fwWho='support'; fwAction='A firmware update is required. Note: Firmware updates must be initiated by Customer Support — please contact them to schedule the update.'; }
+      if(!ok){ fwStatus='err'; fwWho='support'; fwAction=t('actFwUpdate'); }
     }
   }
   basics.push(ck('Firmware',(d.vlxClean||'—')+(d.deviceType?` · ${d.deviceType}`:''),fwStatus,fwAction,fwWho));
   const cidOk=!!d.cid;
   basics.push(ck('Alias / CID',(d.btname?d.btname+' / ':'')+(d.cid||'—'),cidOk?'ok':'err',
-    cidOk?null:'The device ID (CID) is missing — please send this case to Customer Support.',cidOk?null:'support'));
+    cidOk?null:t('actCidMissing'),cidOk?null:'support'));
   const uiNoDisplay=d.ui==='0.0.0';
   basics.push(ck('Display (UI)',d.ui||'—',uiNoDisplay?'err':'ok',
-    uiNoDisplay?'No display connected. Check if a display is installed on the vehicle.':null,
+    uiNoDisplay?t('actNoDisplay'):null,
     uiNoDisplay?'customer':null,uiNoDisplay?'display-connection':null));
   sections.push({title:'Basics',icon:'doc',checks:basics});
 
   /* VEHICLE DATA */
   const vinPrefix=d.vin1?d.vin1.slice(0,3):'';
-  const vehicleMake=VIN_MAP[vinPrefix]||'Unknown vehicle';
+  const vehicleMake=VIN_MAP[vinPrefix]||t('actUnknownVehicle');
   const ignOk=d.ign==='ON', distOk=d.dist!==null;
   const fmsVal=d.fms||'';
   const fmsPresent=!!fmsVal;
   const fmsZeroPct=fmsVal.length?(fmsVal.split('').filter(c=>c==='0').length/fmsVal.length):1;
   const fmsBad=ignOk&&fmsPresent&&fmsZeroPct>=0.50;
   let fmsStatus,fmsAction,fmsWho,fmsGuide;
-  if(!ignOk){ fmsStatus='info'; fmsAction='No FMS check performed — ignition is OFF.'; fmsWho=null; fmsGuide=null; }
-  else if(!fmsPresent){ fmsStatus='err'; fmsAction='No FMS data from the vehicle.'; fmsWho='customer'; fmsGuide='fms-issue'; }
-  else if(fmsBad){ fmsStatus='err'; fmsAction='FMS signal is very weak. Most FMS features will not work correctly.'; fmsWho='customer'; fmsGuide='fms-issue'; }
+  if(!ignOk){ fmsStatus='info'; fmsAction=t('actFmsOff'); fmsWho=null; fmsGuide=null; }
+  else if(!fmsPresent){ fmsStatus='err'; fmsAction=t('actFmsNoData'); fmsWho='customer'; fmsGuide='fms-issue'; }
+  else if(fmsBad){ fmsStatus='err'; fmsAction=t('actFmsWeak'); fmsWho='customer'; fmsGuide='fms-issue'; }
   else{ fmsStatus='ok'; fmsAction=null; fmsWho=null; fmsGuide=null; }
 
   const fms=[];
   fms.push(ck('Ignition',d.ign||'—',ignOk?'ok':'err',
-    ignOk?null:'Ask the customer to switch the ignition on and send a new Diag8.',ignOk?null:'customer'));
+    ignOk?null:t('actIgnOff'),ignOk?null:'customer'));
   fms.push(ck('FMS data',fmsVal||'—',fmsStatus,fmsAction,fmsWho,fmsGuide));
   fms.push(ck('VIN',d.vin1?`${d.vin1} · ${vehicleMake}`:'—','info'));
   fms.push(ck('Fuel level',d.fuel?`${d.fuelPct}%`:'—','info'));
   fms.push(ck('Mileage',d.dist?`${d.distKm} km`:'—',distOk?'ok':'err',
-    distOk?null:'No mileage data from the vehicle — please send this case to Customer Support.',distOk?null:'support'));
+    distOk?null:t('actMileageMissing'),distOk?null:'support'));
   const srcSpeedOk=!d.srcSpeed||d.srcSpeed==='com';
   fms.push(ck('FV default: Speed',`com  |  Current: ${d.srcSpeed||'—'}`,srcSpeedOk?'ok':'warn',
-    srcSpeedOk?null:'Check Fleetvisor vehicle settings and adjust if necessary.',srcSpeedOk?null:'customer'));
+    srcSpeedOk?null:t('actFvCheck'),srcSpeedOk?null:'customer'));
   const srcRpmOk=!d.srcRpm||d.srcRpm==='fms';
   fms.push(ck('FV default: RPM',`fms  |  Current: ${d.srcRpm||'—'}`,srcRpmOk?'ok':'warn',
-    srcRpmOk?null:'Check Fleetvisor vehicle settings and adjust if necessary.',srcRpmOk?null:'customer'));
+    srcRpmOk?null:t('actFvCheck'),srcRpmOk?null:'customer'));
   const srcDistOk=!d.srcDist||d.srcDist==='com';
   fms.push(ck('FV default: Total Distance',`com  |  Current: ${d.srcDist||'—'}`,srcDistOk?'ok':'warn',
-    srcDistOk?null:'Check Fleetvisor vehicle settings and adjust if necessary.',srcDistOk?null:'customer'));
+    srcDistOk?null:t('actFvCheck'),srcDistOk?null:'customer'));
   sections.push({title:'Vehicle Data',icon:'truck',checks:fms});
 
   /* TACHOGRAPH */
@@ -718,39 +1109,39 @@ function renderResults(d){
   const consentVal=consentM?consentM[1]:null;
   const consentMode=consentM?consentM[2]:null;
   let consentOk=true,consentAction=null,consentGuide=false;
-  if(consentVal&&DRIVER_ERRORS[consentVal]){ consentOk=false; consentAction=DRIVER_ERRORS[consentVal]; }
-  else if(consentVal==='3'&&(consentMode==='U'||consentMode==='N')){ consentOk=false; consentAction='Driver consent not confirmed. Check the driver consent setting in the tachograph (ITS).'; consentGuide=true; }
+  if(consentVal&&DRIVER_ERRORS(consentVal)){ consentOk=false; consentAction=DRIVER_ERRORS(consentVal); }
+  else if(consentVal==='3'&&(consentMode==='U'||consentMode==='N')){ consentOk=false; consentAction=t('actConsentNotConfirmed'); consentGuide=true; }
 
   const cardsOk=d.cardCount>0;
   const isVdoGen2=tachoLabel==='VDO Gen2';
   const driverTachoOk=d.driverTacho==='800'||d.driverTacho==='080'||d.driverTacho==='880';
   const driverTachoNeutral=!d.driverTacho||d.driverTacho==='-1'||d.driverTacho==='0';
   const driverTachoErr=!driverTachoOk&&!driverTachoNeutral;
-  const driverTachoAction=driverTachoErr?(DRIVER_ERRORS[d.driverTacho]||'Check the driver tacho value in FleetVisor. The expected value is 800 or 080.'):null;
+  const driverTachoAction=driverTachoErr?(DRIVER_ERRORS(d.driverTacho)||t('actDriverTachoDefault')):null;
 
   const cardNumbers=d.cards?d.cards.split(',').filter(c=>c.includes(':')).map(c=>c.split(':').pop()).join(', '):null;
-  const cardLabel=cardNumbers?cardNumbers:(d.cardCount?`${d.cardCount} card(s)`:'No card detected');
+  const cardLabel=cardNumbers?cardNumbers:(d.cardCount?`${d.cardCount} ${t('labelCards')}`:t('actNoCard'));
 
   let tachoStatus,tachoAction=null,tachoWho=null;
-  if(tachoHasIssue){ tachoStatus='err'; tachoWho='support'; tachoAction='There is a known problem with this tachograph version. Please check with the customer.'; }
-  else if(tachoIs2424Warn){ tachoStatus='warn'; tachoWho='customer'; tachoAction='This tachograph type (2424) has a known compatibility issue. Please discuss a tachograph software update with the workshop.'; }
-  else if(!tachoKnown){ tachoStatus='warn'; tachoWho='support'; tachoAction='Unknown tachograph code — please send this case to Customer Support.'; }
+  if(tachoHasIssue){ tachoStatus='err'; tachoWho='support'; tachoAction=t('actTachoKnownIssue'); }
+  else if(tachoIs2424Warn){ tachoStatus='warn'; tachoWho='customer'; tachoAction=t('actTacho2424'); }
+  else if(!tachoKnown){ tachoStatus='warn'; tachoWho='support'; tachoAction=t('actTachoUnknown'); }
   else tachoStatus='ok';
 
   const d8c=[];
   d8c.push(ck('D8 status',`D8=${d.d8||'—'}`,d8Ok?'ok':'err',
-    d8Ok?null:'Restart the device and request a new Diag8.',d8Ok?null:'customer-then-support'));
+    d8Ok?null:t('actD8Nok'),d8Ok?null:'customer-then-support'));
   if(!driverTachoNeutral) d8c.push(ck('Driver (tacho)',d.driverTacho,driverTachoOk?'ok':'err',driverTachoAction,driverTachoOk?null:'customer'));
   if(isVdoGen2) d8c.push(ck('Driver consent (ITS)',consentM?`tacho(${consentM[1]},${consentM[2]})`:'—',consentOk?'ok':'err',consentAction,consentOk?null:'customer',consentGuide?'its-consent':null));
   d8c.push(ck('Driver card',cardLabel,cardsOk?'ok':'err',
-    cardsOk?null:'No driver card detected. Ask the driver to insert the driver card into the tachograph.',cardsOk?null:'customer'));
+    cardsOk?null:t('actCardMissing'),cardsOk?null:'customer'));
   d8c.push(ck('Tacho version',tachoCodeClean?`${tachoCodeClean} · ${tachoLabel||'Unknown'}`:'—',tachoStatus,tachoAction,tachoWho));
   const srcDriverOk=!d.srcDriver||d.srcDriver==='tacho';
   d8c.push(ck('FV default: Driver Login Method',`tacho  |  Current: ${d.srcDriver||'—'}`,srcDriverOk?'ok':'warn',
-    srcDriverOk?null:'Check Fleetvisor vehicle settings and adjust if necessary.',srcDriverOk?null:'customer'));
+    srcDriverOk?null:t('actFvCheck'),srcDriverOk?null:'customer'));
   const srcSwitchOk=!d.srcSwitch||d.srcSwitch==='com';
   d8c.push(ck('FV default: Switch Input',`com  |  Current: ${d.srcSwitch||'—'}`,srcSwitchOk?'ok':'warn',
-    srcSwitchOk?null:'Check Fleetvisor vehicle settings and adjust if necessary.',srcSwitchOk?null:'customer'));
+    srcSwitchOk?null:t('actFvCheck'),srcSwitchOk?null:'customer'));
   sections.push({title:'Tachograph',icon:'tacho',checks:d8c});
 
   /* GPS */
@@ -759,15 +1150,15 @@ function renderResults(d){
   const coordOk=d.lat&&d.lon;
   const gps=[];
   gps.push(ck('GPS fix',gpsNeg?d.gpsfixNeg:(d.gpsfix||'—'),gpsOk?'ok':'err',
-    gpsOk?null:'Check installation position. Restart hardware. Green LED must be permanently on.',gpsOk?null:'customer-then-support'));
-  if(d.deviceType!=='B4MI 4G') gps.push(ck('Antenna','No issues detected','ok'));
+    gpsOk?null:t('actGpsNok'),gpsOk?null:'customer-then-support'));
+  if(d.deviceType!=='B4MI 4G') gps.push(ck('Antenna',t('actAntennaOk'),'ok'));
 
   if(ignOk&&d.utcDate&&d.gpsAtDate){
     const gpsAgeMin=Math.round((d.utcDate-d.gpsAtDate)/60000);
     const gpsTimeStr=fmtTime(d.gpsAtDate);
     if(gpsAgeMin>30){
       gps.push(ck('GPS position',gpsTimeStr,'warn',
-        `GPS position is outdated. Last fix was ${gpsAgeMin} minutes ago. Check GPS antenna and installation position.`,'customer-then-support'));
+        t('actGpsOld').replace('%MIN%', gpsAgeMin),'customer-then-support'));
     } else {
       gps.push(ck('GPS position',gpsTimeStr,'ok'));
     }
@@ -776,7 +1167,7 @@ function renderResults(d){
   if(coordOk){
     gps.push({label:'Location',value:`<a href="https://maps.google.com/?q=${d.latDeg},${d.lonDeg}" target="_blank">${d.latDeg}°, ${d.lonDeg}° — open map ↗</a>`,status:'info',action:null,who:null,html:true,isCoord:true});
   } else {
-    gps.push(ck('Coordinates','—','err','No position data. Check GPS installation and restart the device.','customer-then-support'));
+    gps.push(ck('Coordinates','—','err',t('actGpsNoCoord'),'customer-then-support'));
   }
   sections.push({title:'GPS & Location',icon:'globe',checks:gps,gpsCoord:coordOk?{lat:d.latDeg,lon:d.lonDeg}:null});
 
@@ -815,9 +1206,9 @@ function render(sections,d){
   const v=document.getElementById('verdict');
   v.classList.remove('v-ok','v-err','v-warn');
   let vClass,vTitle,vIcon;
-  if(err>0){ vClass='v-err'; vTitle=err===1?'1 issue found':`${err} issues found`; vIcon='<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#b91c1c" stroke-width="2.2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>'; }
-  else if(warn>0){ vClass='v-warn'; vTitle='Device OK with warnings'; vIcon='<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#b45309" stroke-width="2.2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>'; }
-  else{ vClass='v-ok'; vTitle='Device looks healthy'; vIcon='<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#15803d" stroke-width="2.2"><circle cx="12" cy="12" r="10"/><polyline points="8 12.5 11 15.5 16 9.5"/></svg>'; }
+  if(err>0){ vClass='v-err'; vTitle=err===1?t('verdictIssue1'):`${err} ${t('verdictIssueN')}`; vIcon='<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#b91c1c" stroke-width="2.2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>'; }
+  else if(warn>0){ vClass='v-warn'; vTitle=t('verdictWarn'); vIcon='<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#b45309" stroke-width="2.2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>'; }
+  else{ vClass='v-ok'; vTitle=t('verdictOk'); vIcon='<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#15803d" stroke-width="2.2"><circle cx="12" cy="12" r="10"/><polyline points="8 12.5 11 15.5 16 9.5"/></svg>'; }
   v.classList.add(vClass);
   document.getElementById('verdict-icon').innerHTML=vIcon;
   document.getElementById('verdict-title').textContent=vTitle;
@@ -842,18 +1233,18 @@ function render(sections,d){
     todo.style.display='grid';
     const itemHtml=p=>`<div class="todo-item it-${p.status}">
       <div class="todo-what">${esc(p.section)} — ${esc(p.label)}${
-        p.guide==='its-consent'?` <button class="btn-howto" onclick="openInfoModal()"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="10" x2="12" y2="18"/><line x1="12" y1="6" x2="12.01" y2="6"/></svg>How to fix</button>`:
-        p.guide==='display-connection'?` <button class="btn-howto" onclick="openDisplayModal()"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="10" x2="12" y2="18"/><line x1="12" y1="6" x2="12.01" y2="6"/></svg>How to fix</button>`:
-        p.guide==='fms-issue'?` <button class="btn-howto" onclick="openFmsModal()"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="10" x2="12" y2="18"/><line x1="12" y1="6" x2="12.01" y2="6"/></svg>How to fix</button>`:''
+        p.guide==='its-consent'?` <button class="btn-howto" onclick="openInfoModal()"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="10" x2="12" y2="18"/><line x1="12" y1="6" x2="12.01" y2="6"/></svg>${t('btnHowToFix')}</button>`:
+        p.guide==='display-connection'?` <button class="btn-howto" onclick="openDisplayModal()"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="10" x2="12" y2="18"/><line x1="12" y1="6" x2="12.01" y2="6"/></svg>${t('btnHowToFix')}</button>`:
+        p.guide==='fms-issue'?` <button class="btn-howto" onclick="openFmsModal()"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="10" x2="12" y2="18"/><line x1="12" y1="6" x2="12.01" y2="6"/></svg>${t('btnHowToFix')}</button>`:''
       }</div>
-      <div class="todo-fix">${p.action?esc(p.action):'Check this value and ask the customer for details if needed.'}${p.who==='customer-then-support'?' <span class="esc-note">If this does not help → send to Customer Support.</span>':''}</div>
+      <div class="todo-fix">${p.action?esc(p.action):t('todoDefaultAction')}${p.who==='customer-then-support'?` <span class="esc-note">${t('todoEscNote')}</span>`:''}</div>
     </div>`;
     let html='';
     if(custItems.length){
       html+=`<div class="todo-col">
         <div class="todo-col-head tch-cust">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><polyline points="16 11 18 13 22 9"/></svg>
-          Customer can fix<span class="cnt">${custItems.length}</span>
+          ${t('todoColCustomer')}<span class="cnt">${custItems.length}</span>
         </div>
         ${custItems.map(itemHtml).join('')}
       </div>`;
@@ -862,12 +1253,12 @@ function render(sections,d){
       html+=`<div class="todo-col">
         <div class="todo-col-head tch-supp">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M3 18v-6a9 9 0 0 1 18 0v6"/><path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3zM3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z"/></svg>
-          Send to Customer Support<span class="cnt">${suppItems.length}</span>
+          ${t('todoColSupport')}<span class="cnt">${suppItems.length}</span>
         </div>
         ${suppItems.map(itemHtml).join('')}
         <div class="todo-foot">
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
-          Use step 3 in the sidebar to send the report
+          ${t('todoFootNote')}
         </div>
       </div>`;
     }
@@ -878,18 +1269,18 @@ function render(sections,d){
   document.getElementById('sections').innerHTML=sections.map(sec=>{
     const hasErr=sec.checks.some(c=>c.status==='err');
     const hasWarn=sec.checks.some(c=>c.status==='warn');
-    const state=hasErr?['cs-err',sec.checks.filter(c=>c.status==='err').length+' issue(s)']
-              :hasWarn?['cs-warn','Warning']
-              :['cs-ok','All passed'];
+    const state=hasErr?['cs-err',sec.checks.filter(c=>c.status==='err').length+' '+t('stateIssues')]
+              :hasWarn?['cs-warn',t('stateWarning')]
+              :['cs-ok',t('stateAllPassed')];
     const rows=sec.checks.map(c=>{
       const val=c.html?c.value:esc(c.value||'—');
       /* guide button only in value cell for non-howto hints */
       const guideBtn=c.guide==='its-consent'
-        ?` <button class="btn-howto" onclick="openInfoModal()"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="10" x2="12" y2="18"/><line x1="12" y1="6" x2="12.01" y2="6"/></svg>How to fix</button>`
+        ?` <button class="btn-howto" onclick="openInfoModal()"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="10" x2="12" y2="18"/><line x1="12" y1="6" x2="12.01" y2="6"/></svg>${t('btnHowToFix')}</button>`
         :c.guide==='display-connection'
-        ?` <button class="btn-howto" onclick="openDisplayModal()"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="10" x2="12" y2="18"/><line x1="12" y1="6" x2="12.01" y2="6"/></svg>How to fix</button>`
+        ?` <button class="btn-howto" onclick="openDisplayModal()"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="10" x2="12" y2="18"/><line x1="12" y1="6" x2="12.01" y2="6"/></svg>${t('btnHowToFix')}</button>`
         :c.guide==='fms-issue'
-        ?` <button class="btn-howto" onclick="openFmsModal()"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="10" x2="12" y2="18"/><line x1="12" y1="6" x2="12.01" y2="6"/></svg>How to fix</button>`
+        ?` <button class="btn-howto" onclick="openFmsModal()"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="10" x2="12" y2="18"/><line x1="12" y1="6" x2="12.01" y2="6"/></svg>${t('btnHowToFix')}</button>`
         :'';
       return `<div class="check" data-status="${c.status}">
         <span class="ck-icon ck-${c.status}">${CK_MARK[c.status]}</span>
@@ -959,11 +1350,14 @@ function render(sections,d){
   updateHotlinePreview();
 }
 
+
+
+
 function copyCmd(el,text){
   navigator.clipboard.writeText(text).then(()=>{
     el.classList.add('copied');
     const orig=el.innerHTML;
-    el.innerHTML='<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg> Copied!';
+    el.innerHTML='<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg> '+t('btnCopied');
     setTimeout(()=>{ el.classList.remove('copied'); el.innerHTML=orig; },1500);
   });
 }
@@ -1002,20 +1396,20 @@ function buildEmailBody(){
   if(!d) return '';
   const allChecks=[];
   if(lastSections) lastSections.forEach(sec=>sec.checks.forEach(c=>{ if(c.status==='err'||c.status==='warn') allChecks.push(`• ${sec.title} — ${c.label}`); }));
-  const errorLines=allChecks.length?allChecks.join('\n'):'• No issues detected';
+  const errorLines=allChecks.length?allChecks.join('\n'):`• ${t('emailNoIssues').replace('• ','')}`;
   return [
-    'CASE INFORMATION FILLED IN BY CUSTOMER','======================================',
-    `Company: ${company}`,`MSISDN: ${msisdn}`,`Error desc.:: ${errDesc}`,'',
-    'DEVICE INFO','-----------',
+    t('emailSectionCustomer'),'======================================',
+    `${t('emailFieldCompany')}: ${company}`,`${t('emailFieldMsisdn')}: ${msisdn}`,`${t('emailFieldErrorDesc')}: ${errDesc}`,'',
+    t('emailSectionDevice'),'-----------',
     `CID: ${d.cid||'—'} | VIN: ${d.vin1||'—'} | Timestamp: ${d.tsFormatted||'—'} | Firmware: ${d.vlxClean||'—'}${d.deviceType?' ('+d.deviceType+')':''}`,
-    '','ERROR REPORT AUTOMATICALLY GENERATED','-------------------------------------',
-    errorLines,'','RAW DIAG8','---------',d.raw||'—',
+    '',t('emailSectionReport'),'-------------------------------------',
+    errorLines,'',t('emailSectionRaw'),'---------',d.raw||'—',
   ].join('\n');
 }
 
 function copyReport(el){
   const body=buildEmailBody();
-  if(!body){ alert('Please run analysis first (step 1).'); return; }
+  if(!body){ alert(t('errNoDiagFirst')); return; }
   navigator.clipboard.writeText(body);
 }
 
@@ -1027,13 +1421,13 @@ function sendToHotline(){
   if(!lastAnalysis) missing.push('Diag8 analysis (step 1)');
   if(!msisdn) missing.push('MSISDN');
   if(!company) missing.push('Company');
-  if(missing.length){ errEl.textContent=`Please fill in: ${missing.join(' and ')}`; errEl.style.display='block'; return; }
+  if(missing.length){ errEl.textContent=`${t('errFillIn')} ${missing.join(' '+t('errAnd')+' ')}`; errEl.style.display='block'; return; }
   errEl.style.display='none';
   document.getElementById('step3').classList.add('done');
   const alias=(lastAnalysis&&lastAnalysis.btname)?lastAnalysis.btname:null;
   const subject=encodeURIComponent(`${company} | ${msisdn}${alias?' | Alias: '+alias:''}`);
   const body=buildEmailBody();
-  if(!body){ errEl.textContent='Could not build email body.'; errEl.style.display='block'; return; }
+  if(!body){ errEl.textContent=t('errCouldNotBuild'); errEl.style.display='block'; return; }
   const cid=lastAnalysis&&lastAnalysis.cid?lastAnalysis.cid:null;
   const ccEmail=cid&&customerMap[cid]&&customerMap[cid].email?customerMap[cid].email:null;
   const ccPart=ccEmail?`&cc=${encodeURIComponent(ccEmail)}`:'';
