@@ -831,11 +831,11 @@ function applyI18n(){
     const id = k.replace('td','td-').toLowerCase().replace('tddevice','td-device').replace('tdfw','td-fw').replace('tdvin','td-vin').replace('tdalias','td-alias').replace('tdcid','td-cid');
   });
   if(document.getElementById('td-vehicle-label')) document.getElementById('td-vehicle-label').textContent = strings.tdVehicle||'Vehicle';
-  document.querySelector('#top-device .td-item:nth-child(1) .td-label').textContent = strings.tdDevice;
-  document.querySelector('#top-device .td-item:nth-child(2) .td-label').textContent = strings.tdFw;
-  document.querySelector('#top-device .td-item:nth-child(3) .td-label').textContent = strings.tdVin;
+  document.querySelector('#td-device').closest('.td-item').querySelector('.td-label').textContent = strings.tdDevice;
+  document.querySelector('#td-fw').closest('.td-item').querySelector('.td-label').textContent = strings.tdFw;
+  document.querySelector('#td-vin').closest('.td-item').querySelector('.td-label').textContent = strings.tdVin;
   document.querySelector('#td-alias-wrap .td-label').textContent = strings.tdAlias;
-  document.querySelector('#top-device .td-item:nth-child(5) .td-label').textContent = strings.tdCid;
+  document.querySelector('#td-cid').closest('.td-item').querySelector('.td-label').textContent = strings.tdCid;
 }
 
 function renderModals(){
