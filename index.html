@@ -549,25 +549,25 @@ var LANG = {
     actTsOld:'This Diag8 is outdated. Get a fresh diagnostic string and re-analyse.',
     actFwUpdate:'A firmware update is required. Firmware updates must be initiated by Customer Support.',
     actCidMissing:'The device ID (CID) is missing. Please send this case to Customer Support.',
-    actNoDisplay:t('actNoDisplay'),
+    actNoDisplay:'No display connected. Check if a display is installed on the vehicle.',
     actFmsOff:'No FMS check performed. Ignition is OFF.',
     actFmsNoData:'No FMS data from the vehicle.',
     actFmsWeak:'FMS signal is very weak. Most FMS features will not work correctly.',
-    actIgnOff:t('actIgnOff'),
+    actIgnOff:'Ask the customer to switch the ignition on and send a new Diag8.',
     actMileageMissing:'No mileage data from the vehicle. Please send this case to Customer Support.',
-    actFvCheck:t('actFvCheck'),
+    actFvCheck:'Check Fleetvisor vehicle settings and adjust if necessary.',
     actConsentNotConfirmed:'Driver consent not confirmed. Check the driver consent setting in the tachograph (ITS).',
-    actD8Nok:t('actD8Nok'),
+    actD8Nok:'Restart the device and request a new Diag8.',
     actDriverTachoDefault:'Check the driver tacho value in FleetVisor. The expected value is 800 or 080.',
     actDriverErrGeneral:'Check Driver Administration data in FleetVisor (card number, name, etc.)',
     actDriverErr054:'Check FleetVisor - driver activity may be Driver 0 or ID > 16777214. Resend Vehicle Admin Settings and reboot device.',
-    actCardMissing:t('actCardMissing'),
+    actCardMissing:'No driver card detected. Ask the driver to insert the driver card into the tachograph.',
     actTachoKnownIssue:'There is a known problem with this tachograph version. Please check with the customer.',
     actTacho2424:'This tachograph type (2424) has a known compatibility issue. Please discuss a tachograph software update with the workshop.',
     actTachoUnknown:'Unknown tachograph code. Please send this case to Customer Support.',
-    actGpsNok:t('actGpsNok'),
+    actGpsNok:'Check installation position. Restart hardware. Green LED must be permanently on.',
     actGpsOld:'GPS position is outdated. Last fix was %MIN% minutes ago. Check GPS antenna and installation position.',
-    actGpsNoCoord:t('actGpsNoCoord'),
+    actGpsNoCoord:'No position data. Check GPS installation and restart the device.',
     actAntennaOk:'No issues detected',
     actNoCard:'No card detected',
     actUnknownVehicle:'Unknown vehicle',
@@ -718,7 +718,7 @@ var LANG = {
     itsSub:'Jeśli dostępne są dodatkowe wytyczne firmy, należy się do nich odnieść. Wykonaj poniższe kroki razem z kierowcą przy pojeździe',
     itsStep1:'Pierwsze włożenie karty: sprawdź komunikat zgody ITS na wyświetlaczu tachografu.',
     itsStep2:'Przeczytaj informacje: ekran wyjaśnia, że dane mogą być udostępniane do celów zarządzania flotą.',
-    itsStep3:'Wybierz obcie: TAK - to jedyny prewidiowy wybior',
+    itsStep3:'Wybierz opcję: naciśnij TAK lub NIE — to jedyne prawidłowe wybory.',
     itsStep4:'Potwierdź wybór na tachografie, aby zapisać status zgody.',
     itsStep5:'Uwaga: zgoda może zostać zmieniona później w ustawieniach tachografu.',
     pcmTitle:'Iveco PCM Box', pcmSub:'Diagnoza nie może być zastosowana',
@@ -980,7 +980,7 @@ async function runAnalysis(){
   const d=parse(raw);
   if(!d.cid){
     const errBox=document.getElementById('parse-error');
-    errBox.textContent='Das ist keine gültige Diag8 Nachricht, Bitte erneut aus Fleetvisor kopieren und einfügen.';
+    errBox.textContent=t('parseError');
     errBox.style.display='block';
     return;
   }
