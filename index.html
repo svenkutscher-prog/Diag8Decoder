@@ -806,8 +806,8 @@ function t(key){ if(!LANG) return key; var s=LANG[currentLang]||LANG.en; return 
 
 function DRIVER_ERRORS(code){
   if(!code) return null;
-  if(code==='054') return t('actDriverErr054');
-  if(code==='006'||code==='334'||code==='034'||code==='044') return t('actDriverErrGeneral');
+  if(code==='054') return 'actDriverErr054';
+  if(code==='006'||code==='334'||code==='034'||code==='044') return 'actDriverErrGeneral';
   return null;
 }
 
@@ -1179,7 +1179,7 @@ function renderResults(d){
   const gps=[];
   gps.push(ck(t('lbGpsFix'),gpsNeg?d.gpsfixNeg:(d.gpsfix||'—'),gpsOk?'ok':'err',
     gpsOk?null:'actGpsNok',gpsOk?null:'customer-then-support'));
-  if(d.deviceType!=='B4MI 4G') gps.push(ck(t('lbAntenna'),'actAntennaOk','ok'));
+  if(d.deviceType!=='B4MI 4G') gps.push(ck(t('lbAntenna'),t('actAntennaOk'),'ok'));
 
   if(ignOk&&d.utcDate&&d.gpsAtDate){
     const gpsAgeMin=Math.round((d.utcDate-d.gpsAtDate)/60000);
@@ -1265,7 +1265,7 @@ function render(sections,d){
         p.guide==='display-connection'?` <button class="btn-howto" onclick="openDisplayModal()"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="10" x2="12" y2="18"/><line x1="12" y1="6" x2="12.01" y2="6"/></svg>${t('btnHowToFix')}</button>`:
         p.guide==='fms-issue'?` <button class="btn-howto" onclick="openFmsModal()"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="10" x2="12" y2="18"/><line x1="12" y1="6" x2="12.01" y2="6"/></svg>${t('btnHowToFix')}</button>`:''
       }</div>
-      <div class="todo-fix">${p.action?(p.action.startsWith('act')||p.action.startsWith('label')?esc(t(p.action)):esc(p.action)):t('todoDefaultAction')}${p.who==='customer-then-support'?` <span class="esc-note">${t('todoEscNote')}</span>`:''}</div>
+      <div class="todo-fix">${p.action?esc(t(p.action)):t('todoDefaultAction')}${p.who==='customer-then-support'?` <span class="esc-note">${t('todoEscNote')}</span>`:''}</div>
     </div>`;
     let html='';
     if(custItems.length){
