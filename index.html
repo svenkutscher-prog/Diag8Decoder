@@ -340,9 +340,9 @@ input::placeholder,textarea::placeholder{color:#a7b4c6}
         <div class="toolbar">
           <h2 data-i18n="toolbarTitle">Problems</h2>
           <label class="toggle">
-            <input type="checkbox" id="only-problems" checked onchange="applyFilter()">
+            <span data-i18n="toggleShowAll" style="margin-right:6px">Show details</span>
+            <input type="checkbox" id="only-problems" onchange="applyFilter()">
             <span class="tg"></span>
-            <span data-i18n="toggleShowAll">Show all checks</span>
           </label>
         </div>
 
@@ -766,13 +766,15 @@ var currentLang = 'en';
 function setLang(lang){
   if(!LANG||!LANG[lang]) return;
   currentLang = lang;
-  // update active button
   ['en','de','pl'].forEach(l=>{
     document.getElementById('lang-'+l).classList.toggle('active', l===lang);
   });
   applyI18n();
-  // re-render modals with new language
   renderModals();
+  // re-render results if analysis is active
+  if(lastAnalysis && document.getElementById('results').style.display !== 'none'){
+    renderResults(lastAnalysis);
+  }
 }
 
 function t(key){ if(!LANG) return key; var s=LANG[currentLang]||LANG.en; return s&&s[key]!==undefined?s[key]:key; }
@@ -1371,13 +1373,9 @@ function openInfoModal(){ document.getElementById('info-modal').style.display='f
 function closeInfoModal(){ document.getElementById('info-modal').style.display='none'; }
 
 function applyFilter(){
-  const hide=document.getElementById('only-problems').checked;
+  const showDetails=document.getElementById('only-problems').checked;
   const sectionsEl=document.getElementById('sections');
-  if(sectionsEl) sectionsEl.style.display=hide?'none':'';
-  document.querySelectorAll('.check').forEach(el=>{
-    const st=el.getAttribute('data-status');
-    el.classList.toggle('is-hidden',!hide&&(st==='ok'||st==='info'));
-  });
+  if(sectionsEl) sectionsEl.style.display=showDetails?'grid':'none';
 }
 
 function updateHotlinePreview(){
