@@ -1039,8 +1039,8 @@ function renderResults(d){
   /* BASICS */
   const basics=[];
   let tsStatus,tsAction,tsWho=null;
-  if(d.tsFuture){ tsStatus='err'; tsWho='support'; tsAction=t('actTsFuture'); }
-  else if(d.tsOld){ tsStatus='warn'; tsWho='customer'; tsAction=t('actTsOld'); }
+  if(d.tsFuture){ tsStatus='err'; tsWho='support'; tsAction='actTsFuture'; }
+  else if(d.tsOld){ tsStatus='warn'; tsWho='customer'; tsAction='actTsOld'; }
   else{ tsStatus='ok'; tsAction=null; }
   basics.push(ck('Timestamp',d.tsFormatted||d.utc||'—',tsStatus,tsAction,tsWho));
 
@@ -1052,50 +1052,50 @@ function renderResults(d){
       const fwMajor=parseInt(fwMatch[1],10), fwMinor=parseInt(fwMatch[2],10);
       const [minMaj,minMin]=DEVICE_FW_MIN[fwDevicePrefix];
       const ok=fwMajor>minMaj||(fwMajor===minMaj&&fwMinor>=minMin);
-      if(!ok){ fwStatus='err'; fwWho='support'; fwAction=t('actFwUpdate'); }
+      if(!ok){ fwStatus='err'; fwWho='support'; fwAction='actFwUpdate'; }
     }
   }
   basics.push(ck('Firmware',(d.vlxClean||'—')+(d.deviceType?` · ${d.deviceType}`:''),fwStatus,fwAction,fwWho));
   const cidOk=!!d.cid;
   basics.push(ck('Alias / CID',(d.btname?d.btname+' / ':'')+(d.cid||'—'),cidOk?'ok':'err',
-    cidOk?null:t('actCidMissing'),cidOk?null:'support'));
+    cidOk?null:'actCidMissing',cidOk?null:'support'));
   const uiNoDisplay=d.ui==='0.0.0';
   basics.push(ck('Display (UI)',d.ui||'—',uiNoDisplay?'err':'ok',
-    uiNoDisplay?t('actNoDisplay'):null,
+    uiNoDisplay?'actNoDisplay':null,
     uiNoDisplay?'customer':null,uiNoDisplay?'display-connection':null));
   sections.push({title:'Basics',icon:'doc',checks:basics});
 
   /* VEHICLE DATA */
   const vinPrefix=d.vin1?d.vin1.slice(0,3):'';
-  const vehicleMake=VIN_MAP[vinPrefix]||t('actUnknownVehicle');
+  const vehicleMake=VIN_MAP[vinPrefix]||'actUnknownVehicle';
   const ignOk=d.ign==='ON', distOk=d.dist!==null;
   const fmsVal=d.fms||'';
   const fmsPresent=!!fmsVal;
   const fmsZeroPct=fmsVal.length?(fmsVal.split('').filter(c=>c==='0').length/fmsVal.length):1;
   const fmsBad=ignOk&&fmsPresent&&fmsZeroPct>=0.50;
   let fmsStatus,fmsAction,fmsWho,fmsGuide;
-  if(!ignOk){ fmsStatus='info'; fmsAction=t('actFmsOff'); fmsWho=null; fmsGuide=null; }
-  else if(!fmsPresent){ fmsStatus='err'; fmsAction=t('actFmsNoData'); fmsWho='customer'; fmsGuide='fms-issue'; }
-  else if(fmsBad){ fmsStatus='err'; fmsAction=t('actFmsWeak'); fmsWho='customer'; fmsGuide='fms-issue'; }
+  if(!ignOk){ fmsStatus='info'; fmsAction='actFmsOff'; fmsWho=null; fmsGuide=null; }
+  else if(!fmsPresent){ fmsStatus='err'; fmsAction='actFmsNoData'; fmsWho='customer'; fmsGuide='fms-issue'; }
+  else if(fmsBad){ fmsStatus='err'; fmsAction='actFmsWeak'; fmsWho='customer'; fmsGuide='fms-issue'; }
   else{ fmsStatus='ok'; fmsAction=null; fmsWho=null; fmsGuide=null; }
 
   const fms=[];
   fms.push(ck('Ignition',d.ign||'—',ignOk?'ok':'err',
-    ignOk?null:t('actIgnOff'),ignOk?null:'customer'));
+    ignOk?null:'actIgnOff',ignOk?null:'customer'));
   fms.push(ck('FMS data',fmsVal||'—',fmsStatus,fmsAction,fmsWho,fmsGuide));
   fms.push(ck('VIN',d.vin1?`${d.vin1} · ${vehicleMake}`:'—','info'));
   fms.push(ck('Fuel level',d.fuel?`${d.fuelPct}%`:'—','info'));
   fms.push(ck('Mileage',d.dist?`${d.distKm} km`:'—',distOk?'ok':'err',
-    distOk?null:t('actMileageMissing'),distOk?null:'support'));
+    distOk?null:'actMileageMissing',distOk?null:'support'));
   const srcSpeedOk=!d.srcSpeed||d.srcSpeed==='com';
   fms.push(ck('FV default: Speed',`com  |  Current: ${d.srcSpeed||'—'}`,srcSpeedOk?'ok':'warn',
-    srcSpeedOk?null:t('actFvCheck'),srcSpeedOk?null:'customer'));
+    srcSpeedOk?null:'actFvCheck',srcSpeedOk?null:'customer'));
   const srcRpmOk=!d.srcRpm||d.srcRpm==='fms';
   fms.push(ck('FV default: RPM',`fms  |  Current: ${d.srcRpm||'—'}`,srcRpmOk?'ok':'warn',
-    srcRpmOk?null:t('actFvCheck'),srcRpmOk?null:'customer'));
+    srcRpmOk?null:'actFvCheck',srcRpmOk?null:'customer'));
   const srcDistOk=!d.srcDist||d.srcDist==='com';
   fms.push(ck('FV default: Total Distance',`com  |  Current: ${d.srcDist||'—'}`,srcDistOk?'ok':'warn',
-    srcDistOk?null:t('actFvCheck'),srcDistOk?null:'customer'));
+    srcDistOk?null:'actFvCheck',srcDistOk?null:'customer'));
   sections.push({title:'Vehicle Data',icon:'truck',checks:fms});
 
   /* TACHOGRAPH */
@@ -1110,38 +1110,38 @@ function renderResults(d){
   const consentMode=consentM?consentM[2]:null;
   let consentOk=true,consentAction=null,consentGuide=false;
   if(consentVal&&DRIVER_ERRORS(consentVal)){ consentOk=false; consentAction=DRIVER_ERRORS(consentVal); }
-  else if(consentVal==='3'&&(consentMode==='U'||consentMode==='N')){ consentOk=false; consentAction=t('actConsentNotConfirmed'); consentGuide=true; }
+  else if(consentVal==='3'&&(consentMode==='U'||consentMode==='N')){ consentOk=false; consentAction='actConsentNotConfirmed'; consentGuide=true; }
 
   const cardsOk=d.cardCount>0;
   const isVdoGen2=tachoLabel==='VDO Gen2';
   const driverTachoOk=d.driverTacho==='800'||d.driverTacho==='080'||d.driverTacho==='880';
   const driverTachoNeutral=!d.driverTacho||d.driverTacho==='-1'||d.driverTacho==='0';
   const driverTachoErr=!driverTachoOk&&!driverTachoNeutral;
-  const driverTachoAction=driverTachoErr?(DRIVER_ERRORS(d.driverTacho)||t('actDriverTachoDefault')):null;
+  const driverTachoAction=driverTachoErr?(DRIVER_ERRORS(d.driverTacho)||'actDriverTachoDefault'):null;
 
   const cardNumbers=d.cards?d.cards.split(',').filter(c=>c.includes(':')).map(c=>c.split(':').pop()).join(', '):null;
-  const cardLabel=cardNumbers?cardNumbers:(d.cardCount?`${d.cardCount} ${t('labelCards')}`:t('actNoCard'));
+  const cardLabel=cardNumbers?cardNumbers:(d.cardCount?`${d.cardCount} ${t('labelCards')}`:'actNoCard');
 
   let tachoStatus,tachoAction=null,tachoWho=null;
-  if(tachoHasIssue){ tachoStatus='err'; tachoWho='support'; tachoAction=t('actTachoKnownIssue'); }
-  else if(tachoIs2424Warn){ tachoStatus='warn'; tachoWho='customer'; tachoAction=t('actTacho2424'); }
-  else if(!tachoKnown){ tachoStatus='warn'; tachoWho='support'; tachoAction=t('actTachoUnknown'); }
+  if(tachoHasIssue){ tachoStatus='err'; tachoWho='support'; tachoAction='actTachoKnownIssue'; }
+  else if(tachoIs2424Warn){ tachoStatus='warn'; tachoWho='customer'; tachoAction='actTacho2424'; }
+  else if(!tachoKnown){ tachoStatus='warn'; tachoWho='support'; tachoAction='actTachoUnknown'; }
   else tachoStatus='ok';
 
   const d8c=[];
   d8c.push(ck('D8 status',`D8=${d.d8||'—'}`,d8Ok?'ok':'err',
-    d8Ok?null:t('actD8Nok'),d8Ok?null:'customer-then-support'));
+    d8Ok?null:'actD8Nok',d8Ok?null:'customer-then-support'));
   if(!driverTachoNeutral) d8c.push(ck('Driver (tacho)',d.driverTacho,driverTachoOk?'ok':'err',driverTachoAction,driverTachoOk?null:'customer'));
   if(isVdoGen2) d8c.push(ck('Driver consent (ITS)',consentM?`tacho(${consentM[1]},${consentM[2]})`:'—',consentOk?'ok':'err',consentAction,consentOk?null:'customer',consentGuide?'its-consent':null));
   d8c.push(ck('Driver card',cardLabel,cardsOk?'ok':'err',
-    cardsOk?null:t('actCardMissing'),cardsOk?null:'customer'));
+    cardsOk?null:'actCardMissing',cardsOk?null:'customer'));
   d8c.push(ck('Tacho version',tachoCodeClean?`${tachoCodeClean} · ${tachoLabel||'Unknown'}`:'—',tachoStatus,tachoAction,tachoWho));
   const srcDriverOk=!d.srcDriver||d.srcDriver==='tacho';
   d8c.push(ck('FV default: Driver Login Method',`tacho  |  Current: ${d.srcDriver||'—'}`,srcDriverOk?'ok':'warn',
-    srcDriverOk?null:t('actFvCheck'),srcDriverOk?null:'customer'));
+    srcDriverOk?null:'actFvCheck',srcDriverOk?null:'customer'));
   const srcSwitchOk=!d.srcSwitch||d.srcSwitch==='com';
   d8c.push(ck('FV default: Switch Input',`com  |  Current: ${d.srcSwitch||'—'}`,srcSwitchOk?'ok':'warn',
-    srcSwitchOk?null:t('actFvCheck'),srcSwitchOk?null:'customer'));
+    srcSwitchOk?null:'actFvCheck',srcSwitchOk?null:'customer'));
   sections.push({title:'Tachograph',icon:'tacho',checks:d8c});
 
   /* GPS */
@@ -1150,8 +1150,8 @@ function renderResults(d){
   const coordOk=d.lat&&d.lon;
   const gps=[];
   gps.push(ck('GPS fix',gpsNeg?d.gpsfixNeg:(d.gpsfix||'—'),gpsOk?'ok':'err',
-    gpsOk?null:t('actGpsNok'),gpsOk?null:'customer-then-support'));
-  if(d.deviceType!=='B4MI 4G') gps.push(ck('Antenna',t('actAntennaOk'),'ok'));
+    gpsOk?null:'actGpsNok',gpsOk?null:'customer-then-support'));
+  if(d.deviceType!=='B4MI 4G') gps.push(ck('Antenna','actAntennaOk','ok'));
 
   if(ignOk&&d.utcDate&&d.gpsAtDate){
     const gpsAgeMin=Math.round((d.utcDate-d.gpsAtDate)/60000);
@@ -1167,7 +1167,7 @@ function renderResults(d){
   if(coordOk){
     gps.push({label:'Location',value:`<a href="https://maps.google.com/?q=${d.latDeg},${d.lonDeg}" target="_blank">${d.latDeg}°, ${d.lonDeg}° — open map ↗</a>`,status:'info',action:null,who:null,html:true,isCoord:true});
   } else {
-    gps.push(ck('Coordinates','—','err',t('actGpsNoCoord'),'customer-then-support'));
+    gps.push(ck('Coordinates','—','err','actGpsNoCoord','customer-then-support'));
   }
   sections.push({title:'GPS & Location',icon:'globe',checks:gps,gpsCoord:coordOk?{lat:d.latDeg,lon:d.lonDeg}:null});
 
@@ -1237,7 +1237,7 @@ function render(sections,d){
         p.guide==='display-connection'?` <button class="btn-howto" onclick="openDisplayModal()"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="10" x2="12" y2="18"/><line x1="12" y1="6" x2="12.01" y2="6"/></svg>${t('btnHowToFix')}</button>`:
         p.guide==='fms-issue'?` <button class="btn-howto" onclick="openFmsModal()"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="10" x2="12" y2="18"/><line x1="12" y1="6" x2="12.01" y2="6"/></svg>${t('btnHowToFix')}</button>`:''
       }</div>
-      <div class="todo-fix">${p.action?esc(p.action):t('todoDefaultAction')}${p.who==='customer-then-support'?` <span class="esc-note">${t('todoEscNote')}</span>`:''}</div>
+      <div class="todo-fix">${p.action?(p.action.startsWith('act')||p.action.startsWith('label')?esc(t(p.action)):esc(p.action)):t('todoDefaultAction')}${p.who==='customer-then-support'?` <span class="esc-note">${t('todoEscNote')}</span>`:''}</div>
     </div>`;
     let html='';
     if(custItems.length){
