@@ -221,6 +221,7 @@ input::placeholder,textarea::placeholder{color:#a7b4c6}
       <div class="td-item"><span class="td-label">Device</span><span class="td-val" id="td-device">—</span></div>
       <div class="td-item"><span class="td-label">FW</span><span class="td-val" id="td-fw">—</span></div>
       <div class="td-item"><span class="td-label">VIN</span><span class="td-val" id="td-vin">—</span></div>
+      <div class="td-item" id="td-vehicle-wrap" style="display:none"><span class="td-label" id="td-vehicle-label">Vehicle</span><span class="td-val" id="td-vehicle">—</span></div>
       <div class="td-item" id="td-alias-wrap" style="display:none"><span class="td-label">Alias</span><span class="td-val" id="td-alias">—</span></div>
       <div class="td-item"><span class="td-label">CID</span><span class="td-val" id="td-cid">—</span></div>
       <div class="td-item"><span class="td-val" style="color:rgba(255,255,255,.4)" id="td-ts">—</span></div>
@@ -543,7 +544,7 @@ var LANG = {
     btnAnalyseAnyway:'Analyse anyway', btnClearStart:'Clear & start over',
     warnIgnTitle:'Ignition is OFF', warnIgnDesc:'The vehicle must be running during capture.',
     warnTsTitle:'Timestamp outdated', warnTsDesc:'This Diag8 is more than 24 hours old.',
-    tdDevice:'Device', tdFw:'FW', tdVin:'VIN', tdAlias:'Alias', tdCid:'CID',
+    tdVehicle:'Vehicle', tdDevice:'Device', tdFw:'FW', tdVin:'VIN', tdAlias:'Alias', tdCid:'CID',
     versionTag:'Version 2.0 · by Sven Kutscher',
     actTsFuture:'The device timestamp is in the future. Please send this case to Customer Support.',
     actTsOld:'This Diag8 is outdated. Get a fresh diagnostic string and re-analyse.',
@@ -636,7 +637,7 @@ var LANG = {
     btnAnalyseAnyway:'Trotzdem analysieren', btnClearStart:'Verwerfen & neu starten',
     warnIgnTitle:'Zündung ist AUS', warnIgnDesc:'Das Fahrzeug muss während der Erfassung laufen.',
     warnTsTitle:'Zeitstempel veraltet', warnTsDesc:'Dieser Diag8 ist mehr als 24 Stunden alt.',
-    tdDevice:'Gerät', tdFw:'FW', tdVin:'FIN', tdAlias:'Alias', tdCid:'CID',
+    tdVehicle:'Fahrzeug', tdDevice:'Gerät', tdFw:'FW', tdVin:'FIN', tdAlias:'Alias', tdCid:'CID',
     versionTag:'Version 2.0 · von Sven Kutscher',
     actTsFuture:'Der Gerätezeitstempel liegt in der Zukunft. Bitte diesen Fall an den Kundensupport senden.',
     actTsOld:'Dieser Diag8 ist veraltet. Neuen Diagnosestring anfordern und erneut analysieren.',
@@ -756,7 +757,7 @@ var LANG = {
     actNoCard:'Nie wykryto karty',
     actUnknownVehicle:'Nieznany pojazd',
     labelCards:'karta(y)',
-    tdDevice:'Urządzenie', tdFw:'FW', tdVin:'VIN', tdAlias:'Alias', tdCid:'CID',
+    tdVehicle:'Pojazd', tdDevice:'Urządzenie', tdFw:'FW', tdVin:'VIN', tdAlias:'Alias', tdCid:'CID',
     versionTag:'Wersja 2.0 · autor: Sven Kutscher',
   }
 };
@@ -805,6 +806,7 @@ function applyI18n(){
   ['tdDevice','tdFw','tdVin','tdAlias','tdCid'].forEach(k=>{
     const id = k.replace('td','td-').toLowerCase().replace('tddevice','td-device').replace('tdfw','td-fw').replace('tdvin','td-vin').replace('tdalias','td-alias').replace('tdcid','td-cid');
   });
+  if(document.getElementById('td-vehicle-label')) document.getElementById('td-vehicle-label').textContent = strings.tdVehicle||'Vehicle';
   document.querySelector('#top-device .td-item:nth-child(1) .td-label').textContent = strings.tdDevice;
   document.querySelector('#top-device .td-item:nth-child(2) .td-label').textContent = strings.tdFw;
   document.querySelector('#top-device .td-item:nth-child(3) .td-label').textContent = strings.tdVin;
@@ -1277,17 +1279,10 @@ function render(sections,d){
     const rows=sec.checks.map(c=>{
       const val=c.html?c.value:esc(c.value||'—');
       /* guide button only in value cell for non-howto hints */
-      const guideBtn=c.guide==='its-consent'
-        ?` <button class="btn-howto" onclick="openInfoModal()"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="10" x2="12" y2="18"/><line x1="12" y1="6" x2="12.01" y2="6"/></svg>${t('btnHowToFix')}</button>`
-        :c.guide==='display-connection'
-        ?` <button class="btn-howto" onclick="openDisplayModal()"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="10" x2="12" y2="18"/><line x1="12" y1="6" x2="12.01" y2="6"/></svg>${t('btnHowToFix')}</button>`
-        :c.guide==='fms-issue'
-        ?` <button class="btn-howto" onclick="openFmsModal()"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="10" x2="12" y2="18"/><line x1="12" y1="6" x2="12.01" y2="6"/></svg>${t('btnHowToFix')}</button>`
-        :'';
       return `<div class="check" data-status="${c.status}">
         <span class="ck-icon ck-${c.status}">${CK_MARK[c.status]}</span>
         <span class="ck-label">${esc(c.label)}</span>
-        <span class="ck-value">${val}${guideBtn}</span>
+        <span class="ck-value">${val}</span>
       </div>`;
     }).join('');
     return `<div class="card">
@@ -1304,6 +1299,10 @@ function render(sections,d){
   document.getElementById('td-device').textContent=d.deviceType||'—';
   document.getElementById('td-fw').textContent=d.vlxClean||'—';
   document.getElementById('td-vin').textContent=d.vin1||'—';
+  const vinP=d.vin1?d.vin1.slice(0,3):'';
+  const vMake=vinP&&VIN_MAP[vinP]?VIN_MAP[vinP]:null;
+  if(vMake){ document.getElementById('td-vehicle').textContent=vMake; document.getElementById('td-vehicle-wrap').style.display='flex'; }
+  else{ document.getElementById('td-vehicle-wrap').style.display='none'; }
   document.getElementById('td-cid').textContent=d.cid||'—';
   if(d.btname){ document.getElementById('td-alias').textContent=d.btname; document.getElementById('td-alias-wrap').style.display='flex'; }
   else{ document.getElementById('td-alias-wrap').style.display='none'; }
