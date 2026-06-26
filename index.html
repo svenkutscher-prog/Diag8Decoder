@@ -546,6 +546,14 @@ var LANG = {
     warnTsTitle:'Timestamp outdated', warnTsDesc:'This Diag8 is more than 24 hours old.',
     tdVehicle:'Vehicle', tdDevice:'Device', tdFw:'FW', tdVin:'VIN', tdAlias:'Alias', tdCid:'CID',
     versionTag:'Version 2.0 · by Sven Kutscher',
+    secBasics:'Basics', secVehicle:'Vehicle Data', secTacho:'Tachograph', secGps:'GPS & Location',
+    lbTimestamp:'Timestamp', lbFirmware:'Firmware', lbAliasCid:'Alias / CID', lbDisplay:'Display (UI)',
+    lbIgnition:'Ignition', lbFmsData:'FMS data', lbVin:'VIN', lbFuel:'Fuel level', lbMileage:'Mileage',
+    lbSpeedSrc:'FV default: Speed', lbRpmSrc:'FV default: RPM', lbDistSrc:'FV default: Total Distance',
+    lbD8:'D8 status', lbDriverTacho:'Driver (tacho)', lbDriverConsent:'Driver consent (ITS)',
+    lbDriverCard:'Driver card', lbTachoVer:'Tacho version', lbDriverLogin:'FV default: Driver Login Method',
+    lbSwitchInput:'FV default: Switch Input', lbGpsFix:'GPS fix', lbAntenna:'Antenna',
+    lbGpsPos:'GPS position', lbLocation:'Location',
     actTsFuture:'The device timestamp is in the future. Please send this case to Customer Support.',
     actTsOld:'This Diag8 is outdated. Get a fresh diagnostic string and re-analyse.',
     actFwUpdate:'A firmware update is required. Firmware updates must be initiated by Customer Support.',
@@ -639,6 +647,14 @@ var LANG = {
     warnTsTitle:'Zeitstempel veraltet', warnTsDesc:'Dieser Diag8 ist mehr als 24 Stunden alt.',
     tdVehicle:'Fahrzeug', tdDevice:'Gerät', tdFw:'FW', tdVin:'FIN', tdAlias:'Alias', tdCid:'CID',
     versionTag:'Version 2.0 · von Sven Kutscher',
+    secBasics:'Grundlagen', secVehicle:'Fahrzeugdaten', secTacho:'Tachograph', secGps:'GPS & Standort',
+    lbTimestamp:'Zeitstempel', lbFirmware:'Firmware', lbAliasCid:'Alias / CID', lbDisplay:'Display (UI)',
+    lbIgnition:'Zündung', lbFmsData:'FMS-Daten', lbVin:'FIN', lbFuel:'Kraftstoffstand', lbMileage:'Kilometerstand',
+    lbSpeedSrc:'FV Standard: Geschwindigkeit', lbRpmSrc:'FV Standard: Drehzahl', lbDistSrc:'FV Standard: Gesamtdistanz',
+    lbD8:'D8 Status', lbDriverTacho:'Fahrer (Tacho)', lbDriverConsent:'Fahrer-Einwilligung (ITS)',
+    lbDriverCard:'Fahrerkarte', lbTachoVer:'Tacho-Version', lbDriverLogin:'FV Standard: Fahrer-Login-Methode',
+    lbSwitchInput:'FV Standard: Schaltereingang', lbGpsFix:'GPS-Fix', lbAntenna:'Antenne',
+    lbGpsPos:'GPS-Position', lbLocation:'Standort',
     actTsFuture:'Der Gerätezeitstempel liegt in der Zukunft. Bitte diesen Fall an den Kundensupport senden.',
     actTsOld:'Dieser Diag8 ist veraltet. Neuen Diagnosestring anfordern und erneut analysieren.',
     actFwUpdate:'Firmware-Update erforderlich. Updates werden vom Kundensupport eingeleitet.',
@@ -730,6 +746,14 @@ var LANG = {
     btnAnalyseAnyway:'Analizuj mimo to', btnClearStart:'Wyczyść i zacznij od nowa',
     warnIgnTitle:'Zapłon jest WYŁĄCZONY', warnIgnDesc:'Pojazd musi pracować podczas rejestracji.',
     warnTsTitle:'Znacznik czasu nieaktualny', warnTsDesc:'Ten Diag8 ma ponad 24 godziny.',
+    secBasics:'Podstawowe', secVehicle:'Dane pojazdu', secTacho:'Tachograf', secGps:'GPS i lokalizacja',
+    lbTimestamp:'Znacznik czasu', lbFirmware:'Firmware', lbAliasCid:'Alias / CID', lbDisplay:'Wyświetlacz (UI)',
+    lbIgnition:'Zapłon', lbFmsData:'Dane FMS', lbVin:'VIN', lbFuel:'Poziom paliwa', lbMileage:'Przebieg',
+    lbSpeedSrc:'FV domyślne: Prędkość', lbRpmSrc:'FV domyślne: Obroty', lbDistSrc:'FV domyślne: Łączny dystans',
+    lbD8:'Status D8', lbDriverTacho:'Kierowca (tacho)', lbDriverConsent:'Zgoda kierowcy (ITS)',
+    lbDriverCard:'Karta kierowcy', lbTachoVer:'Wersja tacho', lbDriverLogin:'FV domyślne: Metoda logowania',
+    lbSwitchInput:'FV domyślne: Wejście przełącznika', lbGpsFix:'Fix GPS', lbAntenna:'Antena',
+    lbGpsPos:'Pozycja GPS', lbLocation:'Lokalizacja',
     actTsFuture:'Znacznik czasu urządzenia jest w przyszłości. Prześlij tę sprawę do pomocy technicznej.',
     actTsOld:'Ten Diag8 jest nieaktualny. Pobierz nowy ciąg diagnostyczny i przeanalizuj ponownie.',
     actFwUpdate:'Wymagana aktualizacja oprogramowania. Aktualizacje muszą być zlecone przez pomoc techniczną.',
@@ -1046,7 +1070,7 @@ function renderResults(d){
   if(d.tsFuture){ tsStatus='err'; tsWho='support'; tsAction='actTsFuture'; }
   else if(d.tsOld){ tsStatus='warn'; tsWho='customer'; tsAction='actTsOld'; }
   else{ tsStatus='ok'; tsAction=null; }
-  basics.push(ck('Timestamp',d.tsFormatted||d.utc||'—',tsStatus,tsAction,tsWho));
+  basics.push(ck(t('lbTimestamp'),d.tsFormatted||d.utc||'—',tsStatus,tsAction,tsWho));
 
   const fwDevicePrefix=d.vlxClean?d.vlxClean.charAt(0):null;
   let fwStatus='info',fwAction=null,fwWho=null;
@@ -1059,15 +1083,15 @@ function renderResults(d){
       if(!ok){ fwStatus='err'; fwWho='support'; fwAction='actFwUpdate'; }
     }
   }
-  basics.push(ck('Firmware',(d.vlxClean||'—')+(d.deviceType?` · ${d.deviceType}`:''),fwStatus,fwAction,fwWho));
+  basics.push(ck(t('lbFirmware'),(d.vlxClean||'—')+(d.deviceType?` · ${d.deviceType}`:''),fwStatus,fwAction,fwWho));
   const cidOk=!!d.cid;
-  basics.push(ck('Alias / CID',(d.btname?d.btname+' / ':'')+(d.cid||'—'),cidOk?'ok':'err',
+  basics.push(ck(t('lbAliasCid'),(d.btname?d.btname+' / ':'')+(d.cid||'—'),cidOk?'ok':'err',
     cidOk?null:'actCidMissing',cidOk?null:'support'));
   const uiNoDisplay=d.ui==='0.0.0';
-  basics.push(ck('Display (UI)',d.ui||'—',uiNoDisplay?'err':'ok',
+  basics.push(ck(t('lbDisplay'),d.ui||'—',uiNoDisplay?'err':'ok',
     uiNoDisplay?'actNoDisplay':null,
     uiNoDisplay?'customer':null,uiNoDisplay?'display-connection':null));
-  sections.push({title:'Basics',icon:'doc',checks:basics});
+  sections.push({title:'secBasics',icon:'doc',checks:basics});
 
   /* VEHICLE DATA */
   const vinPrefix=d.vin1?d.vin1.slice(0,3):'';
@@ -1084,23 +1108,23 @@ function renderResults(d){
   else{ fmsStatus='ok'; fmsAction=null; fmsWho=null; fmsGuide=null; }
 
   const fms=[];
-  fms.push(ck('Ignition',d.ign||'—',ignOk?'ok':'err',
+  fms.push(ck(t('lbIgnition'),d.ign||'—',ignOk?'ok':'err',
     ignOk?null:'actIgnOff',ignOk?null:'customer'));
-  fms.push(ck('FMS data',fmsVal||'—',fmsStatus,fmsAction,fmsWho,fmsGuide));
-  fms.push(ck('VIN',d.vin1?`${d.vin1} · ${vehicleMake}`:'—','info'));
-  fms.push(ck('Fuel level',d.fuel?`${d.fuelPct}%`:'—','info'));
-  fms.push(ck('Mileage',d.dist?`${d.distKm} km`:'—',distOk?'ok':'err',
+  fms.push(ck(t('lbFmsData'),fmsVal||'—',fmsStatus,fmsAction,fmsWho,fmsGuide));
+  fms.push(ck(t('lbVin'),d.vin1?`${d.vin1} · ${vehicleMake}`:'—','info'));
+  fms.push(ck(t('lbFuel'),d.fuel?`${d.fuelPct}%`:'—','info'));
+  fms.push(ck(t('lbMileage'),d.dist?`${d.distKm} km`:'—',distOk?'ok':'err',
     distOk?null:'actMileageMissing',distOk?null:'support'));
   const srcSpeedOk=!d.srcSpeed||d.srcSpeed==='com';
-  fms.push(ck('FV default: Speed',`com  |  Current: ${d.srcSpeed||'—'}`,srcSpeedOk?'ok':'warn',
+  fms.push(ck(t('lbSpeedSrc'),`com  |  Current: ${d.srcSpeed||'—'}`,srcSpeedOk?'ok':'warn',
     srcSpeedOk?null:'actFvCheck',srcSpeedOk?null:'customer'));
   const srcRpmOk=!d.srcRpm||d.srcRpm==='fms';
-  fms.push(ck('FV default: RPM',`fms  |  Current: ${d.srcRpm||'—'}`,srcRpmOk?'ok':'warn',
+  fms.push(ck(t('lbRpmSrc'),`fms  |  Current: ${d.srcRpm||'—'}`,srcRpmOk?'ok':'warn',
     srcRpmOk?null:'actFvCheck',srcRpmOk?null:'customer'));
   const srcDistOk=!d.srcDist||d.srcDist==='com';
-  fms.push(ck('FV default: Total Distance',`com  |  Current: ${d.srcDist||'—'}`,srcDistOk?'ok':'warn',
+  fms.push(ck(t('lbDistSrc'),`com  |  Current: ${d.srcDist||'—'}`,srcDistOk?'ok':'warn',
     srcDistOk?null:'actFvCheck',srcDistOk?null:'customer'));
-  sections.push({title:'Vehicle Data',icon:'truck',checks:fms});
+  sections.push({title:'secVehicle',icon:'truck',checks:fms});
 
   /* TACHOGRAPH */
   const d8Ok=d.d8==='OK';
@@ -1133,49 +1157,49 @@ function renderResults(d){
   else tachoStatus='ok';
 
   const d8c=[];
-  d8c.push(ck('D8 status',`D8=${d.d8||'—'}`,d8Ok?'ok':'err',
+  d8c.push(ck(t('lbD8'),`D8=${d.d8||'—'}`,d8Ok?'ok':'err',
     d8Ok?null:'actD8Nok',d8Ok?null:'customer-then-support'));
-  if(!driverTachoNeutral) d8c.push(ck('Driver (tacho)',d.driverTacho,driverTachoOk?'ok':'err',driverTachoAction,driverTachoOk?null:'customer'));
-  if(isVdoGen2) d8c.push(ck('Driver consent (ITS)',consentM?`tacho(${consentM[1]},${consentM[2]})`:'—',consentOk?'ok':'err',consentAction,consentOk?null:'customer',consentGuide?'its-consent':null));
-  d8c.push(ck('Driver card',cardLabel,cardsOk?'ok':'err',
+  if(!driverTachoNeutral) d8c.push(ck(t('lbDriverTacho'),d.driverTacho,driverTachoOk?'ok':'err',driverTachoAction,driverTachoOk?null:'customer'));
+  if(isVdoGen2) d8c.push(ck(t('lbDriverConsent'),consentM?`tacho(${consentM[1]},${consentM[2]})`:'—',consentOk?'ok':'err',consentAction,consentOk?null:'customer',consentGuide?'its-consent':null));
+  d8c.push(ck(t('lbDriverCard'),cardLabel,cardsOk?'ok':'err',
     cardsOk?null:'actCardMissing',cardsOk?null:'customer'));
-  d8c.push(ck('Tacho version',tachoCodeClean?`${tachoCodeClean} · ${tachoLabel||'Unknown'}`:'—',tachoStatus,tachoAction,tachoWho));
+  d8c.push(ck(t('lbTachoVer'),tachoCodeClean?`${tachoCodeClean} · ${tachoLabel||'Unknown'}`:'—',tachoStatus,tachoAction,tachoWho));
   const srcDriverOk=!d.srcDriver||d.srcDriver==='tacho';
-  d8c.push(ck('FV default: Driver Login Method',`tacho  |  Current: ${d.srcDriver||'—'}`,srcDriverOk?'ok':'warn',
+  d8c.push(ck(t('lbDriverLogin'),`tacho  |  Current: ${d.srcDriver||'—'}`,srcDriverOk?'ok':'warn',
     srcDriverOk?null:'actFvCheck',srcDriverOk?null:'customer'));
   const srcSwitchOk=!d.srcSwitch||d.srcSwitch==='com';
-  d8c.push(ck('FV default: Switch Input',`com  |  Current: ${d.srcSwitch||'—'}`,srcSwitchOk?'ok':'warn',
+  d8c.push(ck(t('lbSwitchInput'),`com  |  Current: ${d.srcSwitch||'—'}`,srcSwitchOk?'ok':'warn',
     srcSwitchOk?null:'actFvCheck',srcSwitchOk?null:'customer'));
-  sections.push({title:'Tachograph',icon:'tacho',checks:d8c});
+  sections.push({title:'secTacho',icon:'tacho',checks:d8c});
 
   /* GPS */
   const gpsNeg=!!d.gpsfixNeg;
   const gpsOk=!gpsNeg&&d.gpsfix&&!d.gpsfix.startsWith('0/');
   const coordOk=d.lat&&d.lon;
   const gps=[];
-  gps.push(ck('GPS fix',gpsNeg?d.gpsfixNeg:(d.gpsfix||'—'),gpsOk?'ok':'err',
+  gps.push(ck(t('lbGpsFix'),gpsNeg?d.gpsfixNeg:(d.gpsfix||'—'),gpsOk?'ok':'err',
     gpsOk?null:'actGpsNok',gpsOk?null:'customer-then-support'));
-  if(d.deviceType!=='B4MI 4G') gps.push(ck('Antenna','actAntennaOk','ok'));
+  if(d.deviceType!=='B4MI 4G') gps.push(ck(t('lbAntenna'),'actAntennaOk','ok'));
 
   if(ignOk&&d.utcDate&&d.gpsAtDate){
     const gpsAgeMin=Math.round((d.utcDate-d.gpsAtDate)/60000);
     const gpsTimeStr=fmtTime(d.gpsAtDate);
     if(gpsAgeMin>30){
-      gps.push(ck('GPS position',gpsTimeStr,'warn',
+      gps.push(ck(t('lbGpsPos'),gpsTimeStr,'warn',
         t('actGpsOld').replace('%MIN%', gpsAgeMin),'customer-then-support'));
     } else {
-      gps.push(ck('GPS position',gpsTimeStr,'ok'));
+      gps.push(ck(t('lbGpsPos'),gpsTimeStr,'ok'));
     }
   }
 
   if(coordOk){
-    gps.push({label:'Location',value:`<a href="https://maps.google.com/?q=${d.latDeg},${d.lonDeg}" target="_blank">${d.latDeg}°, ${d.lonDeg}° — open map ↗</a>`,status:'info',action:null,who:null,html:true,isCoord:true});
+    gps.push({label:t('lbLocation'),value:`<a href="https://maps.google.com/?q=${d.latDeg},${d.lonDeg}" target="_blank">${d.latDeg}°, ${d.lonDeg}° — open map ↗</a>`,status:'info',action:null,who:null,html:true,isCoord:true});
   } else {
-    gps.push(ck('Coordinates','—','err','actGpsNoCoord','customer-then-support'));
+    gps.push(ck(t('lbGpsPos'),'—','err','actGpsNoCoord','customer-then-support'));
   }
-  sections.push({title:'GPS & Location',icon:'globe',checks:gps,gpsCoord:coordOk?{lat:d.latDeg,lon:d.lonDeg}:null});
+  sections.push({title:'secGps',icon:'globe',checks:gps,gpsCoord:coordOk?{lat:d.latDeg,lon:d.lonDeg}:null});
 
-  const order=['Tachograph','Vehicle Data','Basics','GPS & Location'];
+  const order=['secTacho','secVehicle','secBasics','secGps'];
   sections.sort((a,b)=>order.indexOf(a.title)-order.indexOf(b.title));
 
   render(sections,d);
@@ -1226,7 +1250,7 @@ function render(sections,d){
 
   /* strip */
   document.getElementById('strip').innerHTML=allChecks.map(c=>
-    `<div class="seg seg-${c.status}" data-tip="${esc(c.section)} · ${esc(c.label)}"></div>`).join('');
+    `<div class="seg seg-${c.status}" data-tip="${esc(t(c.section))} · ${esc(c.label)}"></div>`).join('');
 
   /* todo list — action text ONLY here, in color */
   const problems=allChecks.filter(c=>c.status!=='ok');
@@ -1236,7 +1260,7 @@ function render(sections,d){
   if(problems.length){
     todo.style.display='grid';
     const itemHtml=p=>`<div class="todo-item it-${p.status}">
-      <div class="todo-what">${esc(p.section)} — ${esc(p.label)}${
+      <div class="todo-what">${esc(t(p.section))} — ${esc(p.label)}${
         p.guide==='its-consent'?` <button class="btn-howto" onclick="openInfoModal()"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="10" x2="12" y2="18"/><line x1="12" y1="6" x2="12.01" y2="6"/></svg>${t('btnHowToFix')}</button>`:
         p.guide==='display-connection'?` <button class="btn-howto" onclick="openDisplayModal()"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="10" x2="12" y2="18"/><line x1="12" y1="6" x2="12.01" y2="6"/></svg>${t('btnHowToFix')}</button>`:
         p.guide==='fms-issue'?` <button class="btn-howto" onclick="openFmsModal()"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="10" x2="12" y2="18"/><line x1="12" y1="6" x2="12.01" y2="6"/></svg>${t('btnHowToFix')}</button>`:''
@@ -1288,7 +1312,7 @@ function render(sections,d){
     return `<div class="card">
       <div class="card-head">
         <div class="card-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#1d4e89" stroke-width="2">${ICONS[sec.icon]}</svg></div>
-        <span class="card-title">${esc(sec.title)}</span>
+        <span class="card-title">${esc(t(sec.title))}</span>
         <span class="card-state ${state[0]}">${state[1]}</span>
       </div>
       ${rows}
@@ -1392,7 +1416,7 @@ function buildEmailBody(){
   const errDesc=document.getElementById('error-input').value.trim()||'—';
   if(!d) return '';
   const allChecks=[];
-  if(lastSections) lastSections.forEach(sec=>sec.checks.forEach(c=>{ if(c.status==='err'||c.status==='warn') allChecks.push(`• ${sec.title} — ${c.label}`); }));
+  if(lastSections) lastSections.forEach(sec=>sec.checks.forEach(c=>{ if(c.status==='err'||c.status==='warn') allChecks.push(`• ${t(sec.title)} — ${c.label}`); }));
   const errorLines=allChecks.length?allChecks.join('\n'):`• ${t('emailNoIssues').replace('• ','')}`;
   return [
     t('emailSectionCustomer'),'======================================',
