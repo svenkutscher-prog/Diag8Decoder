@@ -46,6 +46,9 @@ button{font-family:var(--sans)}
 .top-device .td-val{font-family:var(--mono);font-size:11.5px;color:#fff}
 .top-spacer{flex:1}
 .top-tag{font-size:10.5px;font-family:var(--mono);color:rgba(255,255,255,.45);letter-spacing:.5px}
+.top-drivers{display:none;align-items:center;gap:4px;margin-right:2px;height:100%}
+.top-drivers.visible{display:flex}
+.top-drivers svg{display:block}
 .lang-switcher{display:flex;gap:4px;margin-left:10px}
 .lang-btn{background:none;border:1.5px solid rgba(255,255,255,.18);border-radius:7px;padding:4px 8px;cursor:pointer;line-height:0;transition:all .15s;opacity:.55;display:inline-flex;align-items:center}
 .lang-btn:hover{opacity:1;border-color:rgba(255,255,255,.5);background:rgba(255,255,255,.08)}
@@ -244,6 +247,7 @@ input::placeholder,textarea::placeholder{color:#a7b4c6}
       <div class="td-item"><span class="td-val" style="color:rgba(255,255,255,.4)" id="td-ts">—</span></div>
     </div>
     <div class="top-spacer"></div>
+    <div class="top-drivers" id="top-drivers"></div>
     <span class="top-tag" id="top-tag-version">Version 2.0 · by Sven Kutscher</span>
     <div class="lang-switcher">
       <button class="lang-btn active" onclick="setLang('en')" id="lang-en" title="English"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 60 30" width="24" height="12"><rect width="60" height="30" fill="#012169"/><path d="M0 0l60 30M60 0L0 30" stroke="#fff" stroke-width="6"/><path d="M0 0l60 30M60 0L0 30" stroke="#C8102E" stroke-width="4"/><path d="M30 0v30M0 15h60" stroke="#fff" stroke-width="10"/><path d="M30 0v30M0 15h60" stroke="#C8102E" stroke-width="6"/></svg></button>
@@ -1099,6 +1103,8 @@ function clearAnalysis(){
   if(errEl) errEl.style.display='none';
   const companyInput=document.getElementById('company-input');
   companyInput.value=''; companyInput.readOnly=false; companyInput.style.background=''; companyInput.style.color='';
+  const topDrivers=document.getElementById('top-drivers');
+  if(topDrivers){ topDrivers.classList.remove('visible'); topDrivers.innerHTML=''; }
 }
 
 function ck(label,value,status,action,who,guide){ return {label,value,status,action:action||null,who:who||null,guide:guide||null}; }
@@ -1265,6 +1271,24 @@ const CK_MARK={
 
 function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 
+function renderTopDrivers(d){
+  const el=document.getElementById('top-drivers');
+  if(!el) return;
+  const personSvg=(color)=>`<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="${color}" stroke-width="1.8"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>`;
+  const oneDriver = d.driverTacho==='080' && d.cardCount===1;
+  const twoDrivers = d.driverTacho==='880' && d.cardCount===2;
+  if(oneDriver){
+    el.innerHTML=personSvg('#7fd4a3');
+    el.classList.add('visible');
+  } else if(twoDrivers){
+    el.innerHTML=personSvg('#e0a12e')+personSvg('#e0a12e');
+    el.classList.add('visible');
+  } else {
+    el.innerHTML='';
+    el.classList.remove('visible');
+  }
+}
+
 function render(sections,d){
   lastSections=sections;
   let ok=0,err=0,warn=0;
@@ -1388,6 +1412,7 @@ function render(sections,d){
   document.getElementById('td-ts').textContent=d.tsFormatted||'—';
   document.getElementById('top-device').classList.add('visible');
   document.getElementById('foot-ts').textContent=d.tsFormatted||'—';
+  renderTopDrivers(d);
 
   /* company auto-fill */
   const companyInput=document.getElementById('company-input');
