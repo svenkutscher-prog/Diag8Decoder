@@ -1094,7 +1094,7 @@ function renderResults(d){
 
   /* VEHICLE DATA */
   const vinPrefix=d.vin1?d.vin1.slice(0,3):'';
-  const vehicleMake=VIN_MAP[vinPrefix]||'actUnknownVehicle';
+  const vehicleMake=VIN_MAP[vinPrefix]||t('actUnknownVehicle');
   const ignOk=d.ign==='ON', distOk=d.dist!==null;
   const fmsVal=d.fms||'';
   const fmsPresent=!!fmsVal;
@@ -1147,7 +1147,7 @@ function renderResults(d){
   const driverTachoAction=driverTachoErr?(DRIVER_ERRORS(d.driverTacho)||'actDriverTachoDefault'):null;
 
   const cardNumbers=d.cards?d.cards.split(',').filter(c=>c.includes(':')).map(c=>c.split(':').pop()).join(', '):null;
-  const cardLabel=cardNumbers?cardNumbers:(d.cardCount?`${d.cardCount} ${t('labelCards')}`:'actNoCard');
+  const cardLabel=cardNumbers?cardNumbers:(d.cardCount?`${d.cardCount} ${t('labelCards')}`:t('actNoCard'));
 
   let tachoStatus,tachoAction=null,tachoWho=null;
   if(tachoHasIssue){ tachoStatus='err'; tachoWho='support'; tachoAction='actTachoKnownIssue'; }
