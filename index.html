@@ -977,7 +977,7 @@ function parse(raw){
   d.svc   = get(s,/Svc=([\d]+)/);
   d.ign   = get(s,/ignition=(\w+)/);
   d.pwr   = get(s,/pwr=(\d+)mV/);
-  d.battV = get(s,/batt\(\d+\)=(\d+)mV/);
+  d.battV = get(s,/PWR:[^\n]*\bVolt=(\d+)mV/) || get(s,/batt\(\d+\)=(\d+)mV/);
   d.battC = get(s,/Cap=(\d+)%/);
   d.battL = get(s,/Level=([\w_]+)/);
   d.battRangeMin = get(s,/Range:\[(\d+),\d+\]/);
