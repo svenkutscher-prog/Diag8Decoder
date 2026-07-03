@@ -1045,7 +1045,9 @@ var customerMap={};
 var lastSections=null;
 var verdictPhotoUri=null;
 
-fetch('customers.json?v='+Date.now()).then(r=>r.json()).then(data=>{customerMap=data;}).catch(()=>{customerMap={};});
+try{
+  fetch('customers.json?v='+Date.now()).then(r=>r.json()).then(data=>{customerMap=data;}).catch(()=>{customerMap={};});
+}catch(e){ customerMap={}; }
 
 function loadSample(){ document.getElementById('diag8-input').value=sampleString(); runAnalysis(); }
 function sampleString(){
