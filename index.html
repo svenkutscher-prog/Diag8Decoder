@@ -594,11 +594,11 @@ var LANG = {
     warnTsTitle:'Timestamp outdated', warnTsDesc:'This Diag8 is more than 24 hours old.',
     tdVehicle:'Vehicle', tdDevice:'Device', tdFw:'FW', tdVin:'VIN', tdAlias:'Alias', tdCid:'CID',
     versionTag:'Version 2.0 · by Sven Kutscher',
-    secBasics:'Basics', secVehicle:'Vehicle Data', secTacho:'Tachograph', secGps:'GPS & Location',
+    secBasics:'Basics', secVehicle:'Vehicle Data', secTacho:'Tachograph (driving/rest times, driver name)', secGps:'GPS & Location',
     lbTimestamp:'Timestamp', lbFirmware:'Firmware', lbAliasCid:'Alias / CID', lbDisplay:'Display (UI)',
     lbIgnition:'Ignition', lbFmsData:'FMS data', lbVin:'VIN', lbFuel:'Fuel level', lbMileage:'Mileage',
     lbSpeedSrc:'FV default: Speed', lbRpmSrc:'FV default: RPM', lbDistSrc:'FV default: Total Distance',
-    lbD8:'D8 status', lbDriverTacho:'Driver (tacho)', lbDriverConsent:'Driver consent (ITS)',
+    lbD8:'Tachograph connection (D8 connector)', lbDriverTacho:'Driver (tacho)', lbDriverConsent:'Driver consent (ITS)',
     lbDriverCard:'Driver card', lbTachoVer:'Tacho version', lbDriverLogin:'FV default: Driver Login Method',
     lbSwitchInput:'FV default: Switch Input', lbGpsFix:'GPS fix', lbAntenna:'Antenna',
     lbGpsPos:'GPS position', lbLocation:'Location',
@@ -699,11 +699,11 @@ var LANG = {
     warnTsTitle:'Zeitstempel veraltet', warnTsDesc:'Dieser Diag8 ist mehr als 24 Stunden alt.',
     tdVehicle:'Fahrzeug', tdDevice:'Gerät', tdFw:'FW', tdVin:'FIN', tdAlias:'Alias', tdCid:'CID',
     versionTag:'Version 2.0 · von Sven Kutscher',
-    secBasics:'Grundlagen', secVehicle:'Fahrzeugdaten', secTacho:'Tachograph', secGps:'GPS & Standort',
+    secBasics:'Grundlagen', secVehicle:'Fahrzeugdaten', secTacho:'Tachograph (Lenk-/Ruhezeiten, Fahrername)', secGps:'GPS & Standort',
     lbTimestamp:'Zeitstempel', lbFirmware:'Firmware', lbAliasCid:'Alias / CID', lbDisplay:'Display (UI)',
     lbIgnition:'Zündung', lbFmsData:'FMS-Daten', lbVin:'FIN', lbFuel:'Kraftstoffstand', lbMileage:'Kilometerstand',
     lbSpeedSrc:'FV Standard: Geschwindigkeit', lbRpmSrc:'FV Standard: Drehzahl', lbDistSrc:'FV Standard: Gesamtdistanz',
-    lbD8:'D8 Status', lbDriverTacho:'Fahrer (Tacho)', lbDriverConsent:'Fahrer-Einwilligung (ITS)',
+    lbD8:'Tachograph-Verbindung (D8-Stecker)', lbDriverTacho:'Fahrer (Tacho)', lbDriverConsent:'Fahrer-Einwilligung (ITS)',
     lbDriverCard:'Fahrerkarte', lbTachoVer:'Tacho-Version', lbDriverLogin:'FV Standard: Fahrer-Login-Methode',
     lbSwitchInput:'FV Standard: Schaltereingang', lbGpsFix:'GPS-Fix', lbAntenna:'Antenne',
     lbGpsPos:'GPS-Position', lbLocation:'Standort',
@@ -802,11 +802,11 @@ var LANG = {
     btnAnalyseAnyway:'Analizuj mimo to', btnClearStart:'Wyczyść i zacznij od nowa',
     warnIgnTitle:'Zapłon jest WYŁĄCZONY', warnIgnDesc:'Pojazd musi pracować podczas rejestracji.',
     warnTsTitle:'Znacznik czasu nieaktualny', warnTsDesc:'Ten Diag8 ma ponad 24 godziny.',
-    secBasics:'Podstawowe', secVehicle:'Dane pojazdu', secTacho:'Tachograf', secGps:'GPS i lokalizacja',
+    secBasics:'Podstawowe', secVehicle:'Dane pojazdu', secTacho:'Tachograf (czas jazdy/odpoczynku, nazwisko kierowcy)', secGps:'GPS i lokalizacja',
     lbTimestamp:'Znacznik czasu', lbFirmware:'Firmware', lbAliasCid:'Alias / CID', lbDisplay:'Wyświetlacz (UI)',
     lbIgnition:'Zapłon', lbFmsData:'Dane FMS', lbVin:'VIN', lbFuel:'Poziom paliwa', lbMileage:'Przebieg',
     lbSpeedSrc:'FV domyślne: Prędkość', lbRpmSrc:'FV domyślne: Obroty', lbDistSrc:'FV domyślne: Łączny dystans',
-    lbD8:'Status D8', lbDriverTacho:'Kierowca (tacho)', lbDriverConsent:'Zgoda kierowcy (ITS)',
+    lbD8:'Połączenie tachografu (złącze D8)', lbDriverTacho:'Kierowca (tacho)', lbDriverConsent:'Zgoda kierowcy (ITS)',
     lbDriverCard:'Karta kierowcy', lbTachoVer:'Wersja tacho', lbDriverLogin:'FV domyślne: Metoda logowania',
     lbSwitchInput:'FV domyślne: Wejście przełącznika', lbGpsFix:'Fix GPS', lbAntenna:'Antena',
     lbGpsPos:'Pozycja GPS', lbLocation:'Lokalizacja',
@@ -1241,7 +1241,7 @@ function renderResults(d){
   else tachoStatus='ok';
 
   const d8c=[];
-  d8c.push(ck(t('lbD8'),`D8=${d.d8||'—'}`,d8Ok?'ok':'err',
+  d8c.push(ck(`${d8Ok?'🔌':'⚠️'} ${t('lbD8')}`,`D8=${d.d8||'—'}`,d8Ok?'ok':'err',
     d8Ok?null:'actD8Nok',d8Ok?null:'customer-then-support'));
   if(!driverTachoNeutral) d8c.push(ck(t('lbDriverTacho'),d.driverTacho,driverTachoOk?'ok':'err',driverTachoAction,driverTachoOk?null:'customer'));
   if(isVdoGen2) d8c.push(ck(t('lbDriverConsent'),consentM?`tacho(${consentM[1]},${consentM[2]})`:'—',consentOk?'ok':'err',consentAction,consentOk?null:'customer',consentGuide?'its-consent':null));
