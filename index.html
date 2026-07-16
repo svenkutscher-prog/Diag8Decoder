@@ -1308,7 +1308,9 @@ function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').rep
 function renderTopBattery(d){
   const el=document.getElementById('top-battery');
   if(!el) return;
-  if(!d.battV||!d.battC||!d.battL){
+  const devicePrefix=d.vlxClean?d.vlxClean.charAt(0):null;
+  const allowedPrefixes=['6','9'];
+  if(!allowedPrefixes.includes(devicePrefix) || !d.battV||!d.battC||!d.battL){
     el.innerHTML='';
     el.classList.remove('visible');
     return;
