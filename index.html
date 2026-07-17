@@ -361,9 +361,7 @@ input::placeholder,textarea::placeholder{color:#a7b4c6}
                 <div class="verdict-sub" id="verdict-sub"></div>
               </div>
               <div class="verdict-stats">
-                <span class="vstat vstat-ok"><span class="dot"></span><span id="cnt-ok">0</span> <span data-i18n="statPassed">passed</span></span>
                 <span class="vstat vstat-warn" id="vstat-warn"><span class="dot"></span><span id="cnt-warn">0</span> <span data-i18n="statWarnings">warnings</span></span>
-                <span class="vstat vstat-err" id="vstat-err"><span class="dot"></span><span id="cnt-err">0</span> <span data-i18n="statIssues">issues</span></span>
               </div>
             </div>
             <div class="strip" id="strip"></div>
@@ -1371,10 +1369,7 @@ function render(sections,d){
   document.getElementById('verdict-title').textContent=vTitle;
   const cidLabel=(d.btname?d.btname+' / ':'')+(d.cid||'—');
   document.getElementById('verdict-sub').textContent=`${cidLabel} · ${d.tsFormatted||'—'}`;
-  document.getElementById('cnt-ok').textContent=ok;
-  document.getElementById('cnt-err').textContent=err;
   document.getElementById('cnt-warn').textContent=warn;
-  document.getElementById('vstat-err').style.display=err>0?'flex':'none';
   document.getElementById('vstat-warn').style.display=warn>0?'flex':'none';
 
   /* verdict photo column */
