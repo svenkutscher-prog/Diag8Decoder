@@ -259,7 +259,7 @@ input::placeholder,textarea::placeholder{color:#a7b4c6}
     <div class="top-spacer"></div>
     <div class="top-battery" id="top-battery"></div>
     <div class="top-drivers" id="top-drivers"></div>
-    <span class="top-tag" id="top-tag-version">Version 2.0 · by Sven Kutscher</span>
+    <span class="top-tag" id="top-tag-version">Version 2.1 · by Sven Kutscher</span>
     <div class="lang-switcher">
       <button class="lang-btn active" onclick="setLang('en')" id="lang-en" title="English"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 60 30" width="24" height="12"><rect width="60" height="30" fill="#012169"/><path d="M0 0l60 30M60 0L0 30" stroke="#fff" stroke-width="6"/><path d="M0 0l60 30M60 0L0 30" stroke="#C8102E" stroke-width="4"/><path d="M30 0v30M0 15h60" stroke="#fff" stroke-width="10"/><path d="M30 0v30M0 15h60" stroke="#C8102E" stroke-width="6"/></svg></button>
       <button class="lang-btn" onclick="setLang('de')" id="lang-de" title="Deutsch"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 5 3" width="24" height="14"><rect width="5" height="1" fill="#000"/><rect y="1" width="5" height="1" fill="#D00"/><rect y="2" width="5" height="1" fill="#FFCE00"/></svg></button>
@@ -591,7 +591,7 @@ var LANG = {
     warnIgnTitle:'Ignition is OFF', warnIgnDesc:'The vehicle must be running during capture.',
     warnTsTitle:'Timestamp outdated', warnTsDesc:'This Diag8 is more than 24 hours old.',
     tdVehicle:'Vehicle', tdDevice:'Device', tdFw:'FW', tdVin:'VIN', tdAlias:'Alias', tdCid:'CID',
-    versionTag:'Version 2.0 · by Sven Kutscher',
+    versionTag:'Version 2.1 · by Sven Kutscher',
     secBasics:'Basics', secVehicle:'Vehicle Data', secTacho:'Tachograph (driving/rest times, driver name)', secGps:'GPS & Location',
     lbTimestamp:'Timestamp', lbFirmware:'Firmware', lbAliasCid:'Alias / CID', lbDisplay:'Display (UI)',
     lbIgnition:'Ignition', lbFmsData:'FMS data', lbVin:'VIN', lbFuel:'Fuel level', lbMileage:'Mileage',
@@ -696,7 +696,7 @@ var LANG = {
     warnIgnTitle:'Zündung ist AUS', warnIgnDesc:'Das Fahrzeug muss während der Erfassung laufen.',
     warnTsTitle:'Zeitstempel veraltet', warnTsDesc:'Dieser Diag8 ist mehr als 24 Stunden alt.',
     tdVehicle:'Fahrzeug', tdDevice:'Gerät', tdFw:'FW', tdVin:'FIN', tdAlias:'Alias', tdCid:'CID',
-    versionTag:'Version 2.0 · von Sven Kutscher',
+    versionTag:'Version 2.1 · von Sven Kutscher',
     secBasics:'Grundlagen', secVehicle:'Fahrzeugdaten', secTacho:'Tachograph (Lenk-/Ruhezeiten, Fahrername)', secGps:'GPS & Standort',
     lbTimestamp:'Zeitstempel', lbFirmware:'Firmware', lbAliasCid:'Alias / CID', lbDisplay:'Display (UI)',
     lbIgnition:'Zündung', lbFmsData:'FMS-Daten', lbVin:'FIN', lbFuel:'Kraftstoffstand', lbMileage:'Kilometerstand',
@@ -840,7 +840,7 @@ var LANG = {
     deviceImgSub:'Przykładowa etykieta dla tego typu urządzenia',
     deviceImgHint:'Kliknij, aby powiększyć',
     tdVehicle:'Pojazd', tdDevice:'Urządzenie', tdFw:'FW', tdVin:'VIN', tdAlias:'Alias', tdCid:'CID',
-    versionTag:'Wersja 2.0 · autor: Sven Kutscher',
+    versionTag:'Wersja 2.1 · autor: Sven Kutscher',
   }
 };
 
@@ -1010,8 +1010,8 @@ function parse(raw){
   d.tachoConsentFull = s.match(/tacho\((\d+),(\w+)\)/);
   d.cards = get(s,/cards=([^\s]+)/);
   d.tdiag = get(s,/TDiag=([^\s]+)/);
-  d.gpsfix    = get(s,/GPS fix=(\d+\/\d+)/);
-  d.gpsfixNeg = get(s,/GPS fix=(-\d+)/);
+  d.gpsfix    = get(s,/GPSA? fix=(\d+\/\d+)/);
+  d.gpsfixNeg = get(s,/GPSA? fix=(-\d+)/);
   d.lat   = get(s,/lat=(-?\d+)/);
   d.lon   = get(s,/lon=(-?\d+)/);
   d.gpsAt = get(s,/lon=-?\d+\s+at\s+(\d+)/);
@@ -1028,6 +1028,7 @@ function parse(raw){
   if(d.fuel) d.fuelPct=Math.round(parseInt(d.fuel)*0.4);
   if(d.dist) d.distKm=Math.round(parseInt(d.dist)/1000).toLocaleString();
   if(d.tdiag) d.tachoCode=d.tdiag.split(';')[0].trim();
+  d.tachoFirmware = get(s,/TDiag=[^;]+;([^;]*)/);
 
   d.vlxClean=d.vlx?d.vlx.split('-')[0]:null;
   const deviceMap={'6':'B4MI 4G','4':'TruckLinc 2G','9':'GV851 - TruckLincV2','3':'OXE2 2G','8':'PCM'};
@@ -1245,7 +1246,7 @@ function renderResults(d){
   if(isVdoGen2) d8c.push(ck(t('lbDriverConsent'),consentM?`tacho(${consentM[1]},${consentM[2]})`:'—',consentOk?'ok':'err',consentAction,consentOk?null:'customer',consentGuide?'its-consent':null));
   d8c.push(ck(t('lbDriverCard'),cardLabel,cardsOk?'ok':'err',
     cardsOk?null:'actCardMissing',cardsOk?null:'customer'));
-  d8c.push(ck(t('lbTachoVer'),tachoCodeClean?`${tachoCodeClean} · ${tachoLabel||'Unknown'}`:'—',tachoStatus,tachoAction,tachoWho));
+  d8c.push(ck(t('lbTachoVer'),tachoCodeClean?`${tachoCodeClean} · ${tachoLabel||'Unknown'}${d.tachoFirmware?` (FW ${d.tachoFirmware})`:''}`:'—',tachoStatus,tachoAction,tachoWho));
   const srcDriverOk=!d.srcDriver||d.srcDriver==='tacho';
   d8c.push(ck(t('lbDriverLogin'),`tacho  |  Current: ${d.srcDriver||'—'}`,srcDriverOk?'ok':'warn',
     srcDriverOk?null:'actFvCheck',srcDriverOk?null:'customer'));
