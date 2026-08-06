@@ -87,6 +87,9 @@ input::placeholder,textarea::placeholder{color:#a7b4c6}
 .btn-copy-report{width:auto;padding:10px 12px;background:#fff;color:var(--muted);border:1.5px solid var(--line)}
 .btn-copy-report:hover{background:var(--steel-light);color:var(--steel);border-color:#c8d9ef}
 .btn-copy-report.copied{color:var(--ok);border-color:#69c896;background:var(--ok-bg)}
+.logo-mark{cursor:pointer;user-select:none;transition:transform .15s,box-shadow .2s}
+.logo-mark:hover{box-shadow:0 0 0 3px rgba(255,255,255,.18)}
+.logo-mark.cr-flash{background:linear-gradient(135deg,#3fbf75,#15803d)!important;transform:scale(1.1)}
 .btn-clear{width:auto;padding:10px 12px;background:#fff;color:var(--muted);border:1.5px solid var(--line)}
 .btn-clear:hover{background:var(--err-bg);color:var(--err);border-color:var(--err-line)}
 .btn-ghost{background:none;border:none;color:var(--steel);font-size:11.5px;font-weight:500;cursor:pointer;padding:4px 0;text-decoration:underline;text-underline-offset:3px;width:auto}
@@ -245,7 +248,7 @@ input::placeholder,textarea::placeholder{color:#a7b4c6}
 
 <div class="app">
   <div class="topbar">
-    <div class="logo"><div class="logo-mark">D8</div>DIAG8 Analyser</div>
+    <div class="logo"><div class="logo-mark" id="logo-mark" title="" onclick="copyCustomerReport(this)">D8</div>DIAG8 Analyser</div>
     <div class="top-divider"></div>
     <div class="top-device" id="top-device">
       <div class="td-item"><span class="td-label">Device</span><span class="td-val" id="td-device">—</span></div>
@@ -561,6 +564,9 @@ var LANG = {
     verdictIssue1:'1 issue found', verdictIssueN:'issues found',
     verdictWarn:'Device OK with warnings', verdictOk:'Device looks healthy',
     stateIssues:'issue(s)', stateWarning:'Warning', stateAllPassed:'All passed',
+    btnCopyCustomerReport:'Copy customer report', btnCopyCustomerReportTitle:'Copy a colorful HTML health report to paste into a customer email',
+    crBrand:'FleetVisor Device Diagnostics', crTitle:'Device Health Check Report', crGreeting:'Hello,', crGreetingCompany:'Hello %COMPANY%,',
+    crIntro:'Here is the result of the device health check we just performed:', crCaptured:'Checked on', crFooterGenerated:'Generated locally by DIAG8 Analyser', crFooterContact:'Questions? Contact',
     fmsTitle:'FMS Issues', fmsSub:'If you have the required FleetVisor permissions, follow the steps below. Otherwise, contact your internal Fleetmanager or Customer Support.',
     fmsStep1:'Send a Reset command to the vehicle.',
     fmsStep2:'Send FleetVisor settings to the vehicle.',
@@ -665,6 +671,9 @@ var LANG = {
     btnHowToFix:'Anleitung',
     verdictIssue1:'1 Fehler gefunden', verdictIssueN:'Fehler gefunden',
     verdictWarn:'Gerät OK mit Warnungen', verdictOk:'Gerät sieht gesund aus',
+    btnCopyCustomerReport:'Kundenbericht kopieren', btnCopyCustomerReportTitle:'Bunten HTML-Statusbericht kopieren, um ihn in eine Kunden-E-Mail einzufügen',
+    crBrand:'FleetVisor Gerätediagnose', crTitle:'Geräte-Statusbericht', crGreeting:'Hallo,', crGreetingCompany:'Hallo %COMPANY%,',
+    crIntro:'Hier das Ergebnis der soeben durchgeführten Geräteprüfung:', crCaptured:'Geprüft am', crFooterGenerated:'Lokal generiert vom DIAG8 Analyser', crFooterContact:'Fragen? Kontakt:',
     stateIssues:'Fehler', stateWarning:'Warnung', stateAllPassed:'Alle bestanden',
     fmsTitle:'FMS-Probleme', fmsSub:'Wenn Sie über die erforderlichen FleetVisor-Berechtigungen verfügen, führen Sie die folgenden Schritte aus. Andernfalls wenden Sie sich an Ihren internen FleetVisor-Administrator oder den Customer Support.',
     fmsStep1:'Reset-Befehl an das Fahrzeug senden.',
@@ -770,6 +779,9 @@ var LANG = {
     btnHowToFix:'Jak naprawić',
     verdictIssue1:'Znaleziono 1 błąd', verdictIssueN:'błędów znaleziono',
     verdictWarn:'Urządzenie OK z ostrzeżeniami', verdictOk:'Urządzenie wygląda zdrowo',
+    btnCopyCustomerReport:'Kopiuj raport dla klienta', btnCopyCustomerReportTitle:'Skopiuj kolorowy raport HTML, aby wkleić go do e-maila do klienta',
+    crBrand:'Diagnostyka urządzeń FleetVisor', crTitle:'Raport stanu urządzenia', crGreeting:'Dzień dobry,', crGreetingCompany:'Dzień dobry %COMPANY%,',
+    crIntro:'Oto wynik przeprowadzonej właśnie kontroli stanu urządzenia:', crCaptured:'Sprawdzono', crFooterGenerated:'Wygenerowano lokalnie przez DIAG8 Analyser', crFooterContact:'Pytania? Kontakt:',
     stateIssues:'błąd(ów)', stateWarning:'Ostrzeżenie', stateAllPassed:'Wszystkie zaliczone',
     fmsTitle:'Problemy z FMS', fmsSub:'Jeśli posiadasz wymagane uprawnienia w FleetVisor, wykonaj poniższe kroki. W przeciwnym razie skontaktuj się z wewnętrznym administratorem FleetVisor lub działem Customer Support.',
     fmsStep1:'Wyślij polecenie resetowania do pojazdu.',
@@ -883,6 +895,11 @@ function applyI18n(){
     const key = el.getAttribute('data-i18n-placeholder');
     if(strings[key] !== undefined) el.placeholder = strings[key];
   });
+  // titles/tooltips
+  document.querySelectorAll('[data-i18n-title]').forEach(el=>{
+    const key = el.getAttribute('data-i18n-title');
+    if(strings[key] !== undefined) el.title = strings[key];
+  });
   // version tag
   document.getElementById('top-tag-version').textContent = strings.versionTag || '';
   // topbar device labels
@@ -966,6 +983,16 @@ const TACHO_MAP = {
 };
 const TACHO_PROBLEM  = {};
 const TACHO_WARN_2424 = {'2424':true};
+const NATION_CODES = {
+  '02':'AL','03':'AND','04':'ARM','01':'A','05':'AZ','09':'BY','06':'B','08':'BIH',
+  '07':'BG','19':'HR','0B':'CY','0C':'CZ','0E':'DK','10':'EST','14':'FR','12':'FIN',
+  '11':'F','16':'GE','0D':'D','17':'GR','18':'H','1C':'IS','1B':'IRL','39':'IL',
+  '1A':'I','1D':'KZ','38':'KG','20':'LV','13':'FL','1F':'LT','1E':'L','21':'M',
+  '23':'MD','22':'MC','34':'MNE','26':'NL','24':'MK','25':'N','28':'PL','27':'P',
+  '29':'RO','2B':'RUS','2A':'RSM','35':'SRB','2D':'SK','2E':'SLO','0F':'E','2C':'S',
+  '0A':'CH','37':'TJ','30':'TR','2F':'TM','31':'UA','15':'UK','36':'UZ','32':'V',
+  '33':'YU'
+};
 const DEVICE_FW_MIN = {'3':[22,72],'4':[22,72],'6':[22,78],'9':[23,14]};
 
 const DEVICE_IMAGES = {
@@ -1195,14 +1222,14 @@ function renderResults(d){
   fms.push(ck(t('lbMileage'),d.dist?`${d.distKm} km`:'—',distOk?'ok':'err',
     distOk?null:'actMileageMissing',distOk?null:'support'));
   const srcSpeedOk=!d.srcSpeed||d.srcSpeed==='com';
-  fms.push(ck(t('lbSpeedSrc'),`com  |  Current: ${d.srcSpeed||'—'}`,srcSpeedOk?'ok':'warn',
-    srcSpeedOk?null:'actFvCheck',srcSpeedOk?null:'customer'));
+  fms.push(Object.assign(ck(t('lbSpeedSrc'),`com  |  Current: ${d.srcSpeed||'—'}`,srcSpeedOk?'ok':'warn',
+    srcSpeedOk?null:'actFvCheck',srcSpeedOk?null:'customer'),{crHide:true}));
   const srcRpmOk=!d.srcRpm||d.srcRpm==='fms';
-  fms.push(ck(t('lbRpmSrc'),`fms  |  Current: ${d.srcRpm||'—'}`,srcRpmOk?'ok':'warn',
-    srcRpmOk?null:'actFvCheck',srcRpmOk?null:'customer'));
+  fms.push(Object.assign(ck(t('lbRpmSrc'),`fms  |  Current: ${d.srcRpm||'—'}`,srcRpmOk?'ok':'warn',
+    srcRpmOk?null:'actFvCheck',srcRpmOk?null:'customer'),{crHide:true}));
   const srcDistOk=!d.srcDist||d.srcDist==='com';
-  fms.push(ck(t('lbDistSrc'),`com  |  Current: ${d.srcDist||'—'}`,srcDistOk?'ok':'warn',
-    srcDistOk?null:'actFvCheck',srcDistOk?null:'customer'));
+  fms.push(Object.assign(ck(t('lbDistSrc'),`com  |  Current: ${d.srcDist||'—'}`,srcDistOk?'ok':'warn',
+    srcDistOk?null:'actFvCheck',srcDistOk?null:'customer'),{crHide:true}));
   sections.push({title:'secVehicle',icon:'truck',checks:fms});
 
   /* TACHOGRAPH */
@@ -1221,7 +1248,13 @@ function renderResults(d){
 
   const cardsOk=d.cardCount>0;
   const isVdoGen2=tachoLabel==='VDO Gen2';
-  const cardNumbers=d.cards?d.cards.split(',').filter(c=>c.includes(':')).map(c=>c.split(':').pop()).join(', '):null;
+  const cardNumbers=d.cards?d.cards.split(',').filter(c=>c.includes(':')).map(c=>{
+    const parts=c.split(':');
+    const nation=parts[0].trim().toUpperCase();
+    const number=parts.slice(1).join(':').trim();
+    const country=NATION_CODES[nation];
+    return country?`${number} (${country})`:`${number} (${nation})`;
+  }).join(', '):null;
   const cardLabel=cardNumbers?cardNumbers:(d.cardCount?`${d.cardCount} ${t('labelCards')}`:t('actNoCard'));
   const driverTachoOk=d.driverTacho==='800'||d.driverTacho==='080'||d.driverTacho==='880';
   const driverTachoNeutral=!d.driverTacho||d.driverTacho==='-1'||d.driverTacho==='0';
@@ -1248,11 +1281,11 @@ function renderResults(d){
     cardsOk?null:'actCardMissing',cardsOk?null:'customer'));
   d8c.push(ck(t('lbTachoVer'),tachoCodeClean?`${tachoCodeClean} · ${tachoLabel||'Unknown'}${d.tachoFirmware?` (FW ${d.tachoFirmware})`:''}`:'—',tachoStatus,tachoAction,tachoWho));
   const srcDriverOk=!d.srcDriver||d.srcDriver==='tacho';
-  d8c.push(ck(t('lbDriverLogin'),`tacho  |  Current: ${d.srcDriver||'—'}`,srcDriverOk?'ok':'warn',
-    srcDriverOk?null:'actFvCheck',srcDriverOk?null:'customer'));
+  d8c.push(Object.assign(ck(t('lbDriverLogin'),`tacho  |  Current: ${d.srcDriver||'—'}`,srcDriverOk?'ok':'warn',
+    srcDriverOk?null:'actFvCheck',srcDriverOk?null:'customer'),{crHide:true}));
   const srcSwitchOk=!d.srcSwitch||d.srcSwitch==='com';
-  d8c.push(ck(t('lbSwitchInput'),`com  |  Current: ${d.srcSwitch||'—'}`,srcSwitchOk?'ok':'warn',
-    srcSwitchOk?null:'actFvCheck',srcSwitchOk?null:'customer'));
+  d8c.push(Object.assign(ck(t('lbSwitchInput'),`com  |  Current: ${d.srcSwitch||'—'}`,srcSwitchOk?'ok':'warn',
+    srcSwitchOk?null:'actFvCheck',srcSwitchOk?null:'customer'),{crHide:true}));
   sections.push({title:'secTacho',icon:'tacho',checks:d8c});
 
   /* GPS */
@@ -1584,6 +1617,117 @@ function copyReport(el){
   const body=buildEmailBody();
   if(!body){ alert(t('errNoDiagFirst')); return; }
   navigator.clipboard.writeText(body);
+}
+
+/* ============ CUSTOMER-FACING HTML REPORT (for pasting into an email) ============ */
+function buildCustomerReportHtml(){
+  const d=lastAnalysis;
+  if(!d||!lastSections) return null;
+
+  const C={ok:'#15803d',okBg:'#ecfdf3',err:'#b91c1c',errBg:'#fdf0ef',warn:'#b45309',warnBg:'#fdf6ec',
+    info:'#1d4e89',ink:'#0f1c2e',soft:'#3d4f66',muted:'#7186a0',line:'#e9eef4',brand:'#1d4e89',brandDark:'#16365c'};
+  const MARK={ok:'&#10003;',err:'&#10007;',warn:'&#10007;',info:'&#10003;'};
+
+  let ok=0,err=0,warn=0;
+  lastSections.forEach(sec=>sec.checks.forEach(c=>{ if(c.status==='ok')ok++; else if(c.status==='err')err++; else if(c.status==='warn')warn++; }));
+
+  let vColor,vBg,vTitle;
+  if(err>0){ vColor=C.err; vBg=C.errBg; vTitle=err===1?t('verdictIssue1'):`${err} ${t('verdictIssueN')}`; }
+  else if(warn>0){ vColor=C.warn; vBg=C.warnBg; vTitle=t('verdictWarn'); }
+  else{ vColor=C.ok; vBg=C.okBg; vTitle=t('verdictOk'); }
+
+  const vinPrefix=d.vin1?d.vin1.slice(0,3):'';
+  const vehicleMake=(typeof VIN_MAP!=='undefined'&&VIN_MAP[vinPrefix])?VIN_MAP[vinPrefix]:'';
+  const aliasCid=(d.btname?esc(d.btname)+' / ':'')+(d.cid?esc(d.cid):'—');
+  const company=(document.getElementById('company-input').value||'').trim();
+  const greeting=company?t('crGreetingCompany').replace('%COMPANY%',esc(company)):t('crGreeting');
+
+  const metaChip=(label,val)=>`<td bgcolor="#ffffff" style="background-color:#ffffff !important;padding:0 18px 0 0"><span style="display:block;font-size:10px;text-transform:uppercase;letter-spacing:.6px;color:${C.muted} !important;font-family:Arial,sans-serif">${esc(label)}</span><span style="display:block;font-size:12.5px;font-weight:600;color:${C.ink} !important;font-family:Arial,sans-serif;margin-top:2px">${esc(val||'—')}</span></td>`;
+
+  const sectionHtml=sec=>{
+    const visibleChecks=sec.checks.filter(c=>!c.crHide);
+    if(!visibleChecks.length) return '';
+    const hasErr=visibleChecks.some(c=>c.status==='err');
+    const hasWarn=visibleChecks.some(c=>c.status==='warn');
+    const badgeText=hasErr?(visibleChecks.filter(c=>c.status==='err').length+' '+t('stateIssues')):hasWarn?t('stateWarning'):t('stateAllPassed');
+    const badgeColor=hasErr?C.err:hasWarn?C.warn:C.ok;
+    const badgeBg=hasErr?C.errBg:hasWarn?C.warnBg:C.okBg;
+    const badgeHtml=`<table role="presentation" cellpadding="0" cellspacing="0" style="display:inline-block"><tr><td bgcolor="${badgeBg}" style="background-color:${badgeBg} !important;border-radius:12px;padding:3px 9px"><span style="font-size:11px;font-weight:700;color:${badgeColor} !important;font-family:Arial,sans-serif;white-space:nowrap">${esc(badgeText)}</span></td></tr></table>`;
+    const rows=visibleChecks.map(c=>{
+      const markColor=C[c.status]||C.info;
+      const valHtml=c.html?c.value:esc(c.value||'—');
+      return `<tr>
+        <td bgcolor="#ffffff" style="background-color:#ffffff !important;width:18px;padding:6px 0;color:${markColor} !important;font-weight:bold;font-size:12px;font-family:Arial,sans-serif;vertical-align:top">${MARK[c.status]||'&#10003;'}</td>
+        <td bgcolor="#ffffff" style="background-color:#ffffff !important;padding:6px 10px 6px 0;color:${C.muted} !important;font-size:12.5px;font-family:Arial,sans-serif;vertical-align:top">${esc(c.label)}</td>
+        <td bgcolor="#ffffff" style="background-color:#ffffff !important;padding:6px 0;color:${C.ink} !important;font-size:12.5px;font-weight:600;font-family:Arial,sans-serif;text-align:right;vertical-align:top">${valHtml}</td>
+      </tr>`;
+    }).join('');
+    return `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" bgcolor="#ffffff" style="background-color:#ffffff !important;margin:0 0 22px 0">
+      <tr><td bgcolor="#ffffff" style="background-color:#ffffff !important;padding-bottom:8px">
+        <span style="font-size:13.5px;font-weight:700;color:${C.brand} !important;font-family:Arial,sans-serif">${esc(t(sec.title))}</span>
+        &nbsp;&nbsp;${badgeHtml}
+      </td></tr>
+      <tr><td bgcolor="#ffffff" style="background-color:#ffffff !important"><table role="presentation" width="100%" cellpadding="0" cellspacing="0" bgcolor="#ffffff" style="background-color:#ffffff !important;border-top:1px solid ${C.line}">${rows}</table></td></tr>
+    </table>`;
+  };
+
+  return `<table role="presentation" id="customer-report-content" width="100%" cellpadding="0" cellspacing="0" bgcolor="#ffffff" style="background-color:#ffffff !important;margin:0;padding:0">
+  <tr><td align="center" bgcolor="#ffffff" style="background-color:#ffffff !important;padding:0">
+  <table role="presentation" width="600" cellpadding="0" cellspacing="0" bgcolor="#ffffff" style="max-width:600px;width:100%;background-color:#ffffff !important;font-family:Arial,sans-serif;border:1px solid ${C.line}">
+    <tr><td bgcolor="${C.brand}" style="background-color:${C.brand} !important;padding:22px 26px">
+      <div style="font-size:11px;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:6px;color:#ffffff !important">${esc(t('crBrand'))}</div>
+      <div style="font-size:19px;font-weight:700;color:#ffffff !important">${esc(t('crTitle'))}</div>
+      <div style="font-size:12.5px;margin-top:6px;color:#ffffff !important">${esc(d.deviceType||'')}${vehicleMake?' · '+esc(vehicleMake):''}${aliasCid!=='—'?' · '+aliasCid:''}</div>
+    </td></tr>
+    <tr><td bgcolor="#ffffff" style="background-color:#ffffff !important;padding:22px 26px 4px 26px">
+      <div style="font-size:13.5px;color:${C.ink} !important;margin-bottom:10px">${greeting}</div>
+      <div style="font-size:12.5px;color:${C.soft} !important;margin-bottom:18px">${esc(t('crIntro'))}</div>
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" bgcolor="${vBg}" style="background-color:${vBg} !important;margin-bottom:20px">
+        <tr>
+          <td width="4" bgcolor="${vColor}" style="background-color:${vColor} !important;font-size:1px;line-height:1px">&nbsp;</td>
+          <td bgcolor="${vBg}" style="background-color:${vBg} !important;padding:14px 16px">
+            <span style="font-size:15px;font-weight:700;color:${vColor} !important">${MARK[err>0?'err':warn>0?'warn':'ok']} ${esc(vTitle)}</span><br>
+            <span style="font-size:11.5px;color:${C.soft} !important">${esc(t('crCaptured'))} ${esc(d.tsFormatted||'—')}</span>
+          </td>
+        </tr>
+      </table>
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" bgcolor="#ffffff" style="background-color:#ffffff !important;margin-bottom:20px">
+        <tr>${metaChip(t('lbFirmware'),(d.vlxClean||'—')+(d.deviceType?' · '+d.deviceType:''))}${metaChip(t('lbVin'),d.vin1||'—')}${metaChip(t('lbMileage'),d.dist?d.distKm+' km':'—')}</tr>
+      </table>
+      ${lastSections.map(sectionHtml).join('')}
+    </td></tr>
+    <tr><td bgcolor="#f7f9fb" style="background-color:#f7f9fb !important;border-top:1px solid ${C.line};padding:16px 26px;font-size:11px;color:${C.muted} !important;text-align:center">
+      ${esc(t('crFooterGenerated'))}<br>
+      ${esc(t('crFooterContact'))} <a href="mailto:hotline.fleetvisor@addsecure.com" style="color:${C.brand} !important;text-decoration:none">hotline.fleetvisor@addsecure.com</a>
+    </td></tr>
+  </table>
+  </td></tr>
+  </table>`;
+}
+
+function copyCustomerReport(el){
+  const html=buildCustomerReportHtml();
+  if(!html){ alert(t('errNoDiagFirst')); return; }
+  const container=document.createElement('div');
+  container.innerHTML=html;
+  const plain=container.textContent.replace(/\n\s*\n/g,'\n').trim();
+
+  const flashCopied=()=>{
+    el.classList.add('cr-flash');
+    const orig=el.textContent;
+    el.textContent='✓';
+    setTimeout(()=>{ el.classList.remove('cr-flash'); el.textContent=orig; },1200);
+  };
+
+  if(window.ClipboardItem&&navigator.clipboard&&navigator.clipboard.write){
+    const item=new ClipboardItem({
+      'text/html':new Blob([html],{type:'text/html'}),
+      'text/plain':new Blob([plain],{type:'text/plain'})
+    });
+    navigator.clipboard.write([item]).then(flashCopied).catch(()=>{ navigator.clipboard.writeText(plain).then(flashCopied); });
+  } else {
+    navigator.clipboard.writeText(plain).then(flashCopied);
+  }
 }
 
 function sendToHotline(){
