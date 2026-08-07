@@ -975,24 +975,14 @@ const VIN_MAP = {
   WDB:'Mercedes-Benz Actros', VLU:'Scania', VF6:'Renault'
 };
 const TACHO_MAP = {
-  '040':'VDO Gen2','041':'VDO Gen2','022':'VDO Gen2','014':'VDO Gen1',
-  '030':'VDO Gen1','020':'VDO Gen1',
+  '040':'VDO Gen2','041':'VDO Gen2','014':'VDO Gen1',
+  '030':'VDO Gen1','020':'VDO Gen1','022':'VDO Gen1',
   '1619':'Stoneridge Gen2','PABF':'Stoneridge Gen2','1214':'Stoneridge Gen2',
   'PA88':'Stoneridge Gen2','2424':'Stoneridge Gen2',
   'P8KS':'Stoneridge Gen1','P8KU':'Stoneridge Gen1'
 };
 const TACHO_PROBLEM  = {};
 const TACHO_WARN_2424 = {'2424':true};
-const NATION_CODES = {
-  '02':'AL','03':'AND','04':'ARM','01':'A','05':'AZ','09':'BY','06':'B','08':'BIH',
-  '07':'BG','19':'HR','0B':'CY','0C':'CZ','0E':'DK','10':'EST','14':'FR','12':'FIN',
-  '11':'F','16':'GE','0D':'D','17':'GR','18':'H','1C':'IS','1B':'IRL','39':'IL',
-  '1A':'I','1D':'KZ','38':'KG','20':'LV','13':'FL','1F':'LT','1E':'L','21':'M',
-  '23':'MD','22':'MC','34':'MNE','26':'NL','24':'MK','25':'N','28':'PL','27':'P',
-  '29':'RO','2B':'RUS','2A':'RSM','35':'SRB','2D':'SK','2E':'SLO','0F':'E','2C':'S',
-  '0A':'CH','37':'TJ','30':'TR','2F':'TM','31':'UA','15':'UK','36':'UZ','32':'V',
-  '33':'YU'
-};
 const DEVICE_FW_MIN = {'3':[22,72],'4':[22,72],'6':[22,78],'9':[23,14]};
 
 const DEVICE_IMAGES = {
@@ -1248,13 +1238,7 @@ function renderResults(d){
 
   const cardsOk=d.cardCount>0;
   const isVdoGen2=tachoLabel==='VDO Gen2';
-  const cardNumbers=d.cards?d.cards.split(',').filter(c=>c.includes(':')).map(c=>{
-    const parts=c.split(':');
-    const nation=parts[0].trim().toUpperCase();
-    const number=parts.slice(1).join(':').trim();
-    const country=NATION_CODES[nation];
-    return country?`${number} (${country})`:`${number} (${nation})`;
-  }).join(', '):null;
+  const cardNumbers=d.cards?d.cards.split(',').filter(c=>c.includes(':')).map(c=>c.split(':').pop()).join(', '):null;
   const cardLabel=cardNumbers?cardNumbers:(d.cardCount?`${d.cardCount} ${t('labelCards')}`:t('actNoCard'));
   const driverTachoOk=d.driverTacho==='800'||d.driverTacho==='080'||d.driverTacho==='880';
   const driverTachoNeutral=!d.driverTacho||d.driverTacho==='-1'||d.driverTacho==='0';
@@ -1626,7 +1610,7 @@ function buildCustomerReportHtml(){
 
   const C={ok:'#15803d',okBg:'#ecfdf3',err:'#b91c1c',errBg:'#fdf0ef',warn:'#b45309',warnBg:'#fdf6ec',
     info:'#1d4e89',ink:'#0f1c2e',soft:'#3d4f66',muted:'#7186a0',line:'#e9eef4',brand:'#1d4e89',brandDark:'#16365c'};
-  const MARK={ok:'&#10003;',err:'&#10007;',warn:'&#10007;',info:'&#10003;'};
+  const MARK={ok:'&#10003;',err:'&#10007;',warn:'&#9888;',info:'&#8226;'};
 
   let ok=0,err=0,warn=0;
   lastSections.forEach(sec=>sec.checks.forEach(c=>{ if(c.status==='ok')ok++; else if(c.status==='err')err++; else if(c.status==='warn')warn++; }));
@@ -1657,7 +1641,7 @@ function buildCustomerReportHtml(){
       const markColor=C[c.status]||C.info;
       const valHtml=c.html?c.value:esc(c.value||'—');
       return `<tr>
-        <td bgcolor="#ffffff" style="background-color:#ffffff !important;width:18px;padding:6px 0;color:${markColor} !important;font-weight:bold;font-size:12px;font-family:Arial,sans-serif;vertical-align:top">${MARK[c.status]||'&#10003;'}</td>
+        <td bgcolor="#ffffff" style="background-color:#ffffff !important;width:18px;padding:6px 0;color:${markColor} !important;font-weight:bold;font-size:12px;font-family:Arial,sans-serif;vertical-align:top">${MARK[c.status]||'&#8226;'}</td>
         <td bgcolor="#ffffff" style="background-color:#ffffff !important;padding:6px 10px 6px 0;color:${C.muted} !important;font-size:12.5px;font-family:Arial,sans-serif;vertical-align:top">${esc(c.label)}</td>
         <td bgcolor="#ffffff" style="background-color:#ffffff !important;padding:6px 0;color:${C.ink} !important;font-size:12.5px;font-weight:600;font-family:Arial,sans-serif;text-align:right;vertical-align:top">${valHtml}</td>
       </tr>`;
@@ -1697,7 +1681,7 @@ function buildCustomerReportHtml(){
       ${lastSections.map(sectionHtml).join('')}
     </td></tr>
     <tr><td bgcolor="#f7f9fb" style="background-color:#f7f9fb !important;border-top:1px solid ${C.line};padding:16px 26px;font-size:11px;color:${C.muted} !important;text-align:center">
-      ${esc(t('crFooterGenerated'))}<br>
+      ${esc(t('crFooterGenerated'))} · ${esc(t('crCaptured'))} ${esc(d.tsFormatted||'—')}<br>
       ${esc(t('crFooterContact'))} <a href="mailto:hotline.fleetvisor@addsecure.com" style="color:${C.brand} !important;text-decoration:none">hotline.fleetvisor@addsecure.com</a>
     </td></tr>
   </table>
