@@ -1094,10 +1094,10 @@ function loadFromUrlParam(){
   const d = params.get('d');
   if(!d) return;
   try {
-    document.getElementById('diag8-input').value = decodeURIComponent(d);
+    document.getElementById('diag8-input').value = d;
     runAnalysis();
   } catch(e) {
-    console.error('loadFromUrlParam: could not decode ?d= parameter', e);
+    console.error('loadFromUrlParam: could not load ?d= parameter', e);
   }
 }
 function sampleString(){
