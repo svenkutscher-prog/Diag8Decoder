@@ -563,7 +563,9 @@ var LANG = {
     btnHowToFix:'How to fix',
     verdictIssue1:'1 issue found', verdictIssueN:'issues found',
     verdictWarn:'Device OK with warnings', verdictOk:'Device looks healthy',
-    stateIssues:'issue(s)', stateWarning:'Warning', stateAllPassed:'All passed',
+    stateIssues:'issue(s)', stateWarning:'Warning', stateAllPassed:'All passed', statePassedOf:'%OK%/%TOTAL% passed',
+    secBasicsSub:'Timestamp, firmware, device ID', secVehicleSub:'Ignition, FMS data, VIN, mileage',
+    secTachoSub:'Driving and rest times, driver name', secGpsSub:'GPS fix and last known position',
     btnCopyCustomerReport:'Copy customer report', btnCopyCustomerReportTitle:'Copy a colorful HTML health report to paste into a customer email',
     crBrand:'FleetVisor Device Diagnostics', crTitle:'Device Health Check Report', crGreeting:'Hello,', crGreetingCompany:'Hello %COMPANY%,',
     crIntro:'Here is the result of the device health check we just performed:', crCaptured:'Checked on', crFooterGenerated:'Generated locally by DIAG8 Analyser', crFooterContact:'Questions? Contact',
@@ -674,7 +676,9 @@ var LANG = {
     btnCopyCustomerReport:'Kundenbericht kopieren', btnCopyCustomerReportTitle:'Bunten HTML-Statusbericht kopieren, um ihn in eine Kunden-E-Mail einzufügen',
     crBrand:'FleetVisor Gerätediagnose', crTitle:'Geräte-Statusbericht', crGreeting:'Hallo,', crGreetingCompany:'Hallo %COMPANY%,',
     crIntro:'Hier das Ergebnis der soeben durchgeführten Geräteprüfung:', crCaptured:'Geprüft am', crFooterGenerated:'Lokal generiert vom DIAG8 Analyser', crFooterContact:'Fragen? Kontakt:',
-    stateIssues:'Fehler', stateWarning:'Warnung', stateAllPassed:'Alle bestanden',
+    stateIssues:'Fehler', stateWarning:'Warnung', stateAllPassed:'Alle bestanden', statePassedOf:'%OK%/%TOTAL% bestanden',
+    secBasicsSub:'Zeitstempel, Firmware, Geräte-ID', secVehicleSub:'Zündung, FMS-Daten, VIN, Kilometerstand',
+    secTachoSub:'Lenk-/Ruhezeiten, Fahrername', secGpsSub:'GPS-Fix und letzte Position',
     fmsTitle:'FMS-Probleme', fmsSub:'Wenn Sie über die erforderlichen FleetVisor-Berechtigungen verfügen, führen Sie die folgenden Schritte aus. Andernfalls wenden Sie sich an Ihren internen FleetVisor-Administrator oder den Customer Support.',
     fmsStep1:'Reset-Befehl an das Fahrzeug senden.',
     fmsStep2:'FleetVisor-Einstellungen an das Fahrzeug senden.',
@@ -782,7 +786,9 @@ var LANG = {
     btnCopyCustomerReport:'Kopiuj raport dla klienta', btnCopyCustomerReportTitle:'Skopiuj kolorowy raport HTML, aby wkleić go do e-maila do klienta',
     crBrand:'Diagnostyka urządzeń FleetVisor', crTitle:'Raport stanu urządzenia', crGreeting:'Dzień dobry,', crGreetingCompany:'Dzień dobry %COMPANY%,',
     crIntro:'Oto wynik przeprowadzonej właśnie kontroli stanu urządzenia:', crCaptured:'Sprawdzono', crFooterGenerated:'Wygenerowano lokalnie przez DIAG8 Analyser', crFooterContact:'Pytania? Kontakt:',
-    stateIssues:'błąd(ów)', stateWarning:'Ostrzeżenie', stateAllPassed:'Wszystkie zaliczone',
+    stateIssues:'błąd(ów)', stateWarning:'Ostrzeżenie', stateAllPassed:'Wszystkie zaliczone', statePassedOf:'%OK%/%TOTAL% zaliczone',
+    secBasicsSub:'Znacznik czasu, firmware, ID urządzenia', secVehicleSub:'Zapłon, dane FMS, VIN, przebieg',
+    secTachoSub:'Czas jazdy/odpoczynku, nazwisko kierowcy', secGpsSub:'Fix GPS i ostatnia pozycja',
     fmsTitle:'Problemy z FMS', fmsSub:'Jeśli posiadasz wymagane uprawnienia w FleetVisor, wykonaj poniższe kroki. W przeciwnym razie skontaktuj się z wewnętrznym administratorem FleetVisor lub działem Customer Support.',
     fmsStep1:'Wyślij polecenie resetowania do pojazdu.',
     fmsStep2:'Wyślij ustawienia FleetVisor do pojazdu.',
@@ -1642,7 +1648,9 @@ function buildCustomerReportHtml(){
   if(!d||!lastSections) return null;
 
   const C={ok:'#15803d',okBg:'#ecfdf3',err:'#b91c1c',errBg:'#fdf0ef',warn:'#b45309',warnBg:'#fdf6ec',
-    info:'#1d4e89',ink:'#0f1c2e',soft:'#3d4f66',muted:'#7186a0',line:'#e9eef4',brand:'#1d4e89',brandDark:'#16365c'};
+    info:'#1d4e89',ink:'#0f1c2e',soft:'#3d4f66',muted:'#7186a0',line:'#e9eef4',brand:'#1d4e89',brandDark:'#16365c',brandLight:'#e7eef8'};
+  const SUB_KEY={secBasics:'secBasicsSub',secVehicle:'secVehicleSub',secTacho:'secTachoSub',secGps:'secGpsSub'};
+  const ICON_LETTER={doc:'B',truck:'V',tacho:'T',globe:'G'};
   const MARK={ok:'&#10003;',err:'&#10007;',warn:'&#9888;',info:'&#8226;'};
 
   let ok=0,err=0,warn=0;
@@ -1659,32 +1667,46 @@ function buildCustomerReportHtml(){
   const company=(document.getElementById('company-input').value||'').trim();
   const greeting=company?t('crGreetingCompany').replace('%COMPANY%',esc(company)):t('crGreeting');
 
-  const metaChip=(label,val)=>`<td bgcolor="#ffffff" style="background-color:#ffffff !important;padding:0 18px 0 0"><span style="display:block;font-size:10px;text-transform:uppercase;letter-spacing:.6px;color:${C.muted} !important;font-family:Arial,sans-serif">${esc(label)}</span><span style="display:block;font-size:12.5px;font-weight:600;color:${C.ink} !important;font-family:Arial,sans-serif;margin-top:2px">${esc(val||'—')}</span></td>`;
+  const metaChip=(label,val)=>`<td bgcolor="#ffffff" align="left" style="background-color:#ffffff !important;padding:0 18px 0 0"><span style="display:block;text-align:left;font-size:10px;text-transform:uppercase;letter-spacing:.6px;color:${C.muted} !important;font-family:Arial,sans-serif">${esc(label)}</span><span style="display:block;text-align:left;font-size:12.5px;font-weight:600;color:${C.ink} !important;font-family:Arial,sans-serif;margin-top:2px">${esc(val||'—')}</span></td>`;
 
   const sectionHtml=sec=>{
     const visibleChecks=sec.checks.filter(c=>!c.crHide);
     if(!visibleChecks.length) return '';
     const hasErr=visibleChecks.some(c=>c.status==='err');
     const hasWarn=visibleChecks.some(c=>c.status==='warn');
-    const badgeText=hasErr?(visibleChecks.filter(c=>c.status==='err').length+' '+t('stateIssues')):hasWarn?t('stateWarning'):t('stateAllPassed');
+    const ratableChecks=visibleChecks.filter(c=>c.status==='ok'||c.status==='err'||c.status==='warn');
+    const okCount=ratableChecks.filter(c=>c.status==='ok').length;
+    const badgeText=hasErr?(visibleChecks.filter(c=>c.status==='err').length+' '+t('stateIssues')):hasWarn?t('stateWarning'):t('statePassedOf').replace('%OK%',okCount).replace('%TOTAL%',ratableChecks.length);
     const badgeColor=hasErr?C.err:hasWarn?C.warn:C.ok;
     const badgeBg=hasErr?C.errBg:hasWarn?C.warnBg:C.okBg;
     const badgeHtml=`<table role="presentation" cellpadding="0" cellspacing="0" style="display:inline-block"><tr><td bgcolor="${badgeBg}" style="background-color:${badgeBg} !important;border-radius:12px;padding:3px 9px"><span style="font-size:11px;font-weight:700;color:${badgeColor} !important;font-family:Arial,sans-serif;white-space:nowrap">${esc(badgeText)}</span></td></tr></table>`;
+    const title=t(sec.title).replace(/\s*\([^)]*\)\s*$/,'');
+    const subtitle=SUB_KEY[sec.title]?t(SUB_KEY[sec.title]):'';
+    const letter=ICON_LETTER[sec.icon]||'•';
+    const headHtml=`<table role="presentation" width="100%" cellpadding="0" cellspacing="0" bgcolor="${C.brandLight}" style="background-color:${C.brandLight} !important;border-left:4px solid ${C.brand};border-radius:0">
+      <tr>
+        <td width="42" align="left" style="padding:11px 2px 11px 14px" valign="middle">
+          <table role="presentation" cellpadding="0" cellspacing="0"><tr><td width="26" height="26" align="center" bgcolor="${C.brand}" style="background-color:${C.brand} !important;text-align:center;font-size:11px;font-weight:700;color:#ffffff !important;font-family:Arial,sans-serif;line-height:26px">${esc(letter)}</td></tr></table>
+        </td>
+        <td align="left" style="padding:11px 8px" valign="middle">
+          <span style="display:block;text-align:left;font-size:14px;font-weight:700;color:${C.brandDark} !important;font-family:Arial,sans-serif">${esc(title)}</span>
+          ${subtitle?`<span style="display:block;text-align:left;font-size:11px;color:${C.muted} !important;font-family:Arial,sans-serif;margin-top:1px">${esc(subtitle)}</span>`:''}
+        </td>
+        <td align="right" style="padding:11px 14px" valign="middle">${badgeHtml}</td>
+      </tr>
+    </table>`;
     const rows=visibleChecks.map(c=>{
       const markColor=C[c.status]||C.info;
       const valHtml=c.html?c.value:esc(c.value||'—');
       return `<tr>
-        <td bgcolor="#ffffff" style="background-color:#ffffff !important;width:18px;padding:6px 0;color:${markColor} !important;font-weight:bold;font-size:12px;font-family:Arial,sans-serif;vertical-align:top">${MARK[c.status]||'&#8226;'}</td>
-        <td bgcolor="#ffffff" style="background-color:#ffffff !important;padding:6px 10px 6px 0;color:${C.muted} !important;font-size:12.5px;font-family:Arial,sans-serif;vertical-align:top">${esc(c.label)}</td>
-        <td bgcolor="#ffffff" style="background-color:#ffffff !important;padding:6px 0;color:${C.ink} !important;font-size:12.5px;font-weight:600;font-family:Arial,sans-serif;text-align:right;vertical-align:top">${valHtml}</td>
+        <td bgcolor="#ffffff" align="left" style="background-color:#ffffff !important;width:18px;padding:6px 0;color:${markColor} !important;font-weight:bold;font-size:12px;font-family:Arial,sans-serif;vertical-align:top">${MARK[c.status]||'&#8226;'}</td>
+        <td bgcolor="#ffffff" align="left" style="background-color:#ffffff !important;padding:6px 10px 6px 0;color:${C.muted} !important;font-size:12.5px;font-family:Arial,sans-serif;vertical-align:top;text-align:left">${esc(c.label)}</td>
+        <td bgcolor="#ffffff" align="right" style="background-color:#ffffff !important;padding:6px 0;color:${C.ink} !important;font-size:12.5px;font-weight:600;font-family:Arial,sans-serif;text-align:right;vertical-align:top">${valHtml}</td>
       </tr>`;
     }).join('');
     return `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" bgcolor="#ffffff" style="background-color:#ffffff !important;margin:0 0 22px 0">
-      <tr><td bgcolor="#ffffff" style="background-color:#ffffff !important;padding-bottom:8px">
-        <span style="font-size:13.5px;font-weight:700;color:${C.brand} !important;font-family:Arial,sans-serif">${esc(t(sec.title))}</span>
-        &nbsp;&nbsp;${badgeHtml}
-      </td></tr>
-      <tr><td bgcolor="#ffffff" style="background-color:#ffffff !important"><table role="presentation" width="100%" cellpadding="0" cellspacing="0" bgcolor="#ffffff" style="background-color:#ffffff !important;border-top:1px solid ${C.line}">${rows}</table></td></tr>
+      <tr><td bgcolor="#ffffff" style="background-color:#ffffff !important;padding-bottom:0">${headHtml}</td></tr>
+      <tr><td bgcolor="#ffffff" style="background-color:#ffffff !important;padding:6px 4px 0"><table role="presentation" width="100%" cellpadding="0" cellspacing="0" bgcolor="#ffffff" style="background-color:#ffffff !important">${rows}</table></td></tr>
     </table>`;
   };
 
@@ -1714,7 +1736,7 @@ function buildCustomerReportHtml(){
       ${lastSections.map(sectionHtml).join('')}
     </td></tr>
     <tr><td bgcolor="#f7f9fb" style="background-color:#f7f9fb !important;border-top:1px solid ${C.line};padding:16px 26px;font-size:11px;color:${C.muted} !important;text-align:center">
-      ${esc(t('crFooterGenerated'))} · ${esc(t('crCaptured'))} ${esc(d.tsFormatted||'—')}<br>
+      ${esc(t('crFooterGenerated'))}<br>
       ${esc(t('crFooterContact'))} <a href="mailto:hotline.fleetvisor@addsecure.com" style="color:${C.brand} !important;text-decoration:none">hotline.fleetvisor@addsecure.com</a>
     </td></tr>
   </table>
