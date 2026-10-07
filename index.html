@@ -262,7 +262,7 @@ input::placeholder,textarea::placeholder{color:#a7b4c6}
     <div class="top-spacer"></div>
     <div class="top-battery" id="top-battery"></div>
     <div class="top-drivers" id="top-drivers"></div>
-    <span class="top-tag" id="top-tag-version">Version 2.3 · by Sven Kutscher</span>
+    <span class="top-tag" id="top-tag-version">Version 2.4 · by Sven Kutscher</span>
     <div class="lang-switcher">
       <button class="lang-btn active" onclick="setLang('en')" id="lang-en" title="English"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 60 30" width="24" height="12"><rect width="60" height="30" fill="#012169"/><path d="M0 0l60 30M60 0L0 30" stroke="#fff" stroke-width="6"/><path d="M0 0l60 30M60 0L0 30" stroke="#C8102E" stroke-width="4"/><path d="M30 0v30M0 15h60" stroke="#fff" stroke-width="10"/><path d="M30 0v30M0 15h60" stroke="#C8102E" stroke-width="6"/></svg></button>
       <button class="lang-btn" onclick="setLang('de')" id="lang-de" title="Deutsch"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 5 3" width="24" height="14"><rect width="5" height="1" fill="#000"/><rect y="1" width="5" height="1" fill="#D00"/><rect y="2" width="5" height="1" fill="#FFCE00"/></svg></button>
@@ -396,6 +396,26 @@ input::placeholder,textarea::placeholder{color:#a7b4c6}
 </div>
 
 <!-- FMS INFO MODAL -->
+<div id="tachofw-modal" style="display:none" class="modal-overlay" onclick="if(event.target===this)closeTachoFwModal()">
+  <div class="modal info-modal">
+    <div class="modal-head">
+      <div class="modal-icn" style="background:var(--warn-bg)">
+        <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#b45309" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/><line x1="6" y1="15" x2="10" y2="15"/></svg>
+      </div>
+      <div>
+        <div class="modal-title" id="tachofw-title"></div>
+        <div class="modal-sub" id="tachofw-sub"></div>
+      </div>
+    </div>
+    <div class="modal-body">
+      <div id="tachofw-info" style="background:var(--warn-bg);border:1px solid var(--warn-line);border-radius:8px;padding:10px 14px;font-size:12px;color:#8a4a0b;margin:10px 0 4px;line-height:1.55"></div>
+      <ol class="info-steps">
+        <li><span class="info-step-num">1</span><span id="tachofw-step1"></span></li>
+      </ol>
+      <div class="m-btns"><button class="m-pri" id="tachofw-close" onclick="closeTachoFwModal()">Close</button></div>
+    </div>
+  </div>
+</div>
 <div id="fms-modal" style="display:none" class="modal-overlay" onclick="if(event.target===this)closeFmsModal()">
   <div class="modal info-modal">
     <div class="modal-head">
@@ -604,7 +624,7 @@ var LANG = {
     lbTimestamp:'Timestamp', lbFirmware:'Firmware', lbAliasCid:'Alias / CID', lbDisplay:'Display (UI)',
     lbIgnition:'Ignition', lbFmsData:'FMS data', lbVin:'VIN', lbFuel:'Fuel level', lbMileage:'Mileage',
     lbSpeedSrc:'FV default: Speed', lbRpmSrc:'FV default: RPM', lbDistSrc:'FV default: Total Distance',
-    lbD8:'Tachograph connection (D8 connector)', lbDriverTacho:'Driver (tacho)', lbDriverConsent:'Driver consent (ITS)',
+    lbD8:'Tachograph connection (D8 connector)', lbDriverTacho:'Driver (tacho)', lbDriverIds:'Driver IDs', dsHeader:'Co-driver | Driver', dsCo:'Co-driver', dsDrv:'Driver', dsUnk:'Unknown slot', ds0:'not logged in', ds1:'logout being transmitted', ds2:'logging out', ds3:'logged in, ID not known yet', ds4:'logged in, not validated', ds5:'waiting for validation', ds6:'validated, not synced', ds7:'syncing', ds8:'OK', lbDriverConsent:'Driver consent (ITS)',
     lbDriverCard:'Driver card', lbTachoVer:'Tacho version', lbDriverLogin:'FV default: Driver Login Method',
     lbSwitchInput:'FV default: Switch Input', lbGpsFix:'GPS fix', lbAntenna:'Antenna',
     lbGpsPos:'GPS position', lbLocation:'Location',
@@ -627,6 +647,7 @@ var LANG = {
     actDriverErr054:'Check FleetVisor - driver activity may be Driver 0 or ID > 16777214. Resend Vehicle Admin Settings and reboot device.',
     actCardMissing:'No driver card detected. Ask the driver to insert the driver card into the tachograph.',
     actTachoKnownIssue:'There is a known problem with this tachograph version. Please check with the customer.',
+    actTachoFwCompanyCard:'This tachograph firmware has a known company card issue with the tacho download.', tachoFwTitle:'Tachograph firmware: company card issue', tachoFwSub:'Only relevant if there are problems with the tacho download (persistent error "Mismatch company card").', tachoFwInfo:'With this firmware, if an expired company card has been used for remote authentication, the tachograph will no longer accept ANY company card for remote authentication until a firmware upgrade has been done.', tachoFwStep1:'Have the tachograph firmware upgraded at a workshop.',
     actTacho2424:'This tachograph type (2424) has a known compatibility issue. Please discuss a tachograph software update with the workshop.',
     actTachoUnknown:'Unknown tachograph code. Please send this case to Customer Support.',
     actGpsNok:'Check installation position. Restart hardware. Green LED must be permanently on.',
@@ -714,7 +735,7 @@ var LANG = {
     lbTimestamp:'Zeitstempel', lbFirmware:'Firmware', lbAliasCid:'Alias / CID', lbDisplay:'Display (UI)',
     lbIgnition:'Zündung', lbFmsData:'FMS-Daten', lbVin:'FIN', lbFuel:'Kraftstoffstand', lbMileage:'Kilometerstand',
     lbSpeedSrc:'FV Standard: Geschwindigkeit', lbRpmSrc:'FV Standard: Drehzahl', lbDistSrc:'FV Standard: Gesamtdistanz',
-    lbD8:'Tachograph-Verbindung (D8-Stecker)', lbDriverTacho:'Fahrer (Tacho)', lbDriverConsent:'Fahrer-Einwilligung (ITS)',
+    lbD8:'Tachograph-Verbindung (D8-Stecker)', lbDriverTacho:'Fahrer (Tacho)', lbDriverIds:'Fahrer-IDs', dsHeader:'Beifahrer | Fahrer', dsCo:'Beifahrer', dsDrv:'Fahrer', dsUnk:'Unbekannter Slot', ds0:'nicht angemeldet', ds1:'Abmeldung wird übertragen', ds2:'meldet ab', ds3:'angemeldet, ID noch unbekannt', ds4:'angemeldet, nicht validiert', ds5:'wartet auf Validierung', ds6:'validiert, nicht synchronisiert', ds7:'synchronisiert gerade', ds8:'OK', lbDriverConsent:'Fahrer-Einwilligung (ITS)',
     lbDriverCard:'Fahrerkarte', lbTachoVer:'Tacho-Version', lbDriverLogin:'FV Standard: Fahrer-Login-Methode',
     lbSwitchInput:'FV Standard: Schaltereingang', lbGpsFix:'GPS-Fix', lbAntenna:'Antenne',
     lbGpsPos:'GPS-Position', lbLocation:'Standort',
@@ -737,6 +758,7 @@ var LANG = {
     actDriverErr054:'FleetVisor prüfen - Fahreraktivität könnte Fahrer 0 oder ID > 16777214 sein. Fahrzeugeinstellungen erneut senden und Gerät neu starten.',
     actCardMissing:'Keine Fahrerkarte erkannt. Fahrer bitten, Karte in den Tachographen einzustecken.',
     actTachoKnownIssue:'Bekanntes Problem mit dieser Tachographen-Version. Bitte mit dem Kunden klären.',
+    actTachoFwCompanyCard:'Diese Tacho-Firmware hat ein bekanntes Problem mit der Unternehmenskarte beim Tacho-Download.', tachoFwTitle:'Tacho-Firmware: Problem mit Unternehmenskarte', tachoFwSub:'Nur relevant, wenn es Probleme beim Tacho-Download gibt (dauerhafte Fehlermeldung „Mismatch company card“).', tachoFwInfo:'Bei dieser Firmware gilt: Wurde einmal eine abgelaufene Unternehmenskarte für die Remote-Authentifizierung verwendet, akzeptiert der Tachograph danach KEINE Unternehmenskarte mehr für die Remote-Authentifizierung. Das bleibt so, bis ein Firmware-Update durchgeführt wurde.', tachoFwStep1:'Firmware-Update des Tachographen in der Werkstatt durchführen lassen.',
     actTacho2424:'Dieser Tachograph-Typ (2424) hat ein Kompatibilitätsproblem. Bitte Software-Update mit der Werkstatt besprechen.',
     actTachoUnknown:'Unbekannter Tachograph-Code. Bitte diesen Fall an den Kundensupport senden.',
     actGpsNok:'Einbauposition prüfen. Hardware neu starten. Grüne LED muss dauerhaft leuchten.',
@@ -822,7 +844,7 @@ var LANG = {
     lbTimestamp:'Znacznik czasu', lbFirmware:'Firmware', lbAliasCid:'Alias / CID', lbDisplay:'Wyświetlacz (UI)',
     lbIgnition:'Zapłon', lbFmsData:'Dane FMS', lbVin:'VIN', lbFuel:'Poziom paliwa', lbMileage:'Przebieg',
     lbSpeedSrc:'FV domyślne: Prędkość', lbRpmSrc:'FV domyślne: Obroty', lbDistSrc:'FV domyślne: Łączny dystans',
-    lbD8:'Połączenie tachografu (złącze D8)', lbDriverTacho:'Kierowca (tacho)', lbDriverConsent:'Zgoda kierowcy (ITS)',
+    lbD8:'Połączenie tachografu (złącze D8)', lbDriverTacho:'Kierowca (tacho)', lbDriverIds:'ID kierowców', dsHeader:'Drugi kierowca | Kierowca', dsCo:'Drugi kierowca', dsDrv:'Kierowca', dsUnk:'Nieznany slot', ds0:'niezalogowany', ds1:'wysyłanie wylogowania', ds2:'wylogowywanie', ds3:'zalogowany, ID jeszcze nieznane', ds4:'zalogowany, bez walidacji', ds5:'oczekuje na walidację', ds6:'zwalidowany, bez synchronizacji', ds7:'synchronizacja', ds8:'OK', lbDriverConsent:'Zgoda kierowcy (ITS)',
     lbDriverCard:'Karta kierowcy', lbTachoVer:'Wersja tacho', lbDriverLogin:'FV domyślne: Metoda logowania',
     lbSwitchInput:'FV domyślne: Wejście przełącznika', lbGpsFix:'Fix GPS', lbAntenna:'Antena',
     lbGpsPos:'Pozycja GPS', lbLocation:'Lokalizacja',
@@ -845,6 +867,7 @@ var LANG = {
     actDriverErr054:'Sprawdź FleetVisor - aktywność kierowcy może być Kierowca 0 lub ID > 16777214. Wyślij ponownie ustawienia i uruchom urządzenie.',
     actCardMissing:'Nie wykryto karty kierowcy. Poprosi kierowcę o włożenie karty do tachografu.',
     actTachoKnownIssue:'Istnieje znany problem z tą wersją tachografu. Sprawdź z klientem.',
+    actTachoFwCompanyCard:'To oprogramowanie tachografu ma znany problem z kartą przedsiębiorstwa przy pobieraniu danych.', tachoFwTitle:'Oprogramowanie tachografu: problem z kartą przedsiębiorstwa', tachoFwSub:'Dotyczy tylko problemów z pobieraniem danych z tachografu (stały błąd „Mismatch company card”).', tachoFwInfo:'Przy tym oprogramowaniu, jeśli do zdalnego uwierzytelnienia użyto wygasłej karty przedsiębiorstwa, tachograf nie akceptuje już ŻADNEJ karty przedsiębiorstwa do zdalnego uwierzytelniania, dopóki nie zostanie wykonana aktualizacja oprogramowania.', tachoFwStep1:'Zlecić aktualizację oprogramowania tachografu w warsztacie.',
     actTacho2424:'Ten typ tachografu (2424) ma znany problem ze zgodnością. Omów aktualizację oprogramowania z warsztatem.',
     actTachoUnknown:'Nieznany kod tachografu. Prześlij tę sprawę do pomocy technicznej.',
     actGpsNok:'Sprawdź pozycję montażu. Uruchom ponownie sprzęt. Zielona dioda LED musi świecić ciągle.',
@@ -936,6 +959,13 @@ function renderModals(){
   s.fmsMissingItems.forEach((item,i)=>{ if(fmsMissingItems[i]) fmsMissingItems[i].textContent = item; });
   document.querySelector('#fms-modal .m-pri').textContent = s.btnClose;
 
+  // Tacho firmware modal
+  document.getElementById('tachofw-title').textContent = s.tachoFwTitle;
+  document.getElementById('tachofw-sub').textContent = s.tachoFwSub;
+  document.getElementById('tachofw-info').textContent = s.tachoFwInfo;
+  document.getElementById('tachofw-step1').innerHTML = `<strong>${esc(s.tachoFwStep1)}</strong>`;
+  document.getElementById('tachofw-close').textContent = s.btnClose;
+
   // Display modal
   document.querySelector('#display-modal .modal-title').textContent = s.displayTitle;
   document.querySelector('#display-modal .modal-sub').textContent = s.displaySub;
@@ -989,6 +1019,9 @@ const TACHO_MAP = {
 };
 const TACHO_PROBLEM  = {};
 const TACHO_WARN_2424 = {'2424':true};
+/* VDO: full FW = 2nd digit of TDiag code + FW field (040;075 -> 4075) */
+const VDO_FW_MODEL = {'4042':'DTCO 4.0','4072':'DTCO 4.0e','4073':'DTCO 4.0ed','4075':'DTCO 4.0'};
+const VDO_FW_WARN  = {'4042':true,'4072':true,'4073':true};
 const DEVICE_FW_MIN = {'3':[22,72],'4':[22,72],'6':[22,78],'9':[23,14]};
 
 const NATION_CODES = {
@@ -1041,6 +1074,13 @@ function parse(raw){
   d.fms   = get(s,/(?<![a-zA-Z])FMS=([\w]+)/);
   d.vin   = get(s,/VINs=([\w,?]+)/);
   d.driverTacho = get(s,/driver\(tacho\)=(\d+)/);
+  /* driver(<source>)=SSS(co,drv,unk): status digits co|drv|unk + IDs */
+  d.driverSlots=[...s.matchAll(/\bdriver\(([^)]*)\)=([0-9A-Fa-f]{3})\((-?\d+),(-?\d+),(-?\d+)\)/g)].map(m=>({
+    src:m[1]||'?', code:m[2],
+    co: {st:parseInt(m[2][0],16), id:parseInt(m[3],10)},
+    drv:{st:parseInt(m[2][1],16), id:parseInt(m[4],10)},
+    unk:{st:parseInt(m[2][2],16), id:parseInt(m[5],10)}
+  }));
   d.tachoConsentFull = s.match(/tacho\((\d+),(\w+)\)/);
   d.cards = get(s,/cards=([^\s]+)/);
   d.tdiag = get(s,/TDiag=([^\s]+)/);
@@ -1262,6 +1302,10 @@ function renderResults(d){
   const tachoHasIssue=tachoCodeClean&&TACHO_PROBLEM[tachoCodeClean];
   const tachoIs2424Warn=tachoCodeClean&&TACHO_WARN_2424[tachoCodeClean];
   const tachoKnown=tachoLabel!==null;
+  const isVdo=!!(tachoLabel&&tachoLabel.startsWith('VDO'));
+  const vdoFwFull=isVdo&&d.tachoFirmware?tachoCodeClean.charAt(1)+d.tachoFirmware.trim():null;
+  const vdoModel=vdoFwFull?VDO_FW_MODEL[vdoFwFull]||null:null;
+  const vdoFwWarn=!!(vdoFwFull&&VDO_FW_WARN[vdoFwFull]);
   const consentM=d.tachoConsentFull;
   const consentVal=consentM?consentM[1]:null;
   const consentMode=consentM?consentM[2]:null;
@@ -1293,6 +1337,7 @@ function renderResults(d){
   if(tachoHasIssue){ tachoStatus='err'; tachoWho='support'; tachoAction='actTachoKnownIssue'; }
   else if(tachoIs2424Warn){ tachoStatus='warn'; tachoWho='customer'; tachoAction='actTacho2424'; }
   else if(!tachoKnown){ tachoStatus='warn'; tachoWho='support'; tachoAction='actTachoUnknown'; }
+  else if(vdoFwWarn){ tachoStatus='warn'; tachoWho='customer'; tachoAction='actTachoFwCompanyCard'; }
   else tachoStatus='ok';
 
   const d8c=[];
@@ -1302,7 +1347,23 @@ function renderResults(d){
   if(isVdoGen2) d8c.push(ck(t('lbDriverConsent'),consentM?`tacho(${consentM[1]},${consentM[2]})`:'—',consentOk?'ok':'err',consentAction,consentOk?null:'customer',consentGuide?'its-consent':null));
   d8c.push(ck(t('lbDriverCard'),cardLabel,cardsOk?'ok':'err',
     cardsOk?null:'actCardMissing',cardsOk?null:'customer'));
-  d8c.push(ck(t('lbTachoVer'),tachoCodeClean?`${tachoCodeClean} · ${tachoLabel||'Unknown'}${d.tachoFirmware?` (FW ${d.tachoFirmware})`:''}`:'—',tachoStatus,tachoAction,tachoWho));
+  (d.driverSlots||[]).forEach(ds=>{
+    const idTxt=x=>x.id>0?String(x.id):'—';
+    const stTxt=x=>{const k='ds'+x.st; const v=t(k); return v===k?`Status ${x.st}`:v;};
+    const slot=(lbl,x)=>{const pend=x.st>0&&x.st<8; return `<span title="${esc(stTxt(x))}" style="${pend?'color:#b45309;font-weight:600':''}">${esc(t(lbl))} (${esc(idTxt(x))})</span>`;};
+    const parts=[slot('dsCo',ds.co),slot('dsDrv',ds.drv)];
+    if(ds.unk.st!==0||ds.unk.id>0) parts.push(slot('dsUnk',ds.unk));
+    const slots=[ds.co,ds.drv,ds.unk];
+    const st=slots.some(x=>x.st>0&&x.st<8)?'warn':slots.some(x=>x.st===8)?'ok':'info';
+    d8c.push(Object.assign(ck(`${t('lbDriverIds')} (${ds.src})`,`<span style="white-space:nowrap">${parts.join(' | ')}</span>`,st,null,null),{html:true}));
+  });
+  if(isVdo){
+    const vdoTxt=`${tachoLabel}${vdoModel?' '+vdoModel:''}${vdoFwFull?` (FW:${vdoFwFull})`:''}`;
+    const vdoVal=vdoFwWarn?`<span style="color:#b45309;font-weight:600">${esc(vdoTxt)}</span>`:esc(vdoTxt);
+    d8c.push(Object.assign(ck(t('lbTachoVer'),vdoVal,tachoStatus,tachoAction,tachoWho,vdoFwWarn&&tachoAction==='actTachoFwCompanyCard'?'tacho-fw':null),{html:true}));
+  } else {
+    d8c.push(ck(t('lbTachoVer'),tachoCodeClean?`${tachoCodeClean} · ${tachoLabel||'Unknown'}${d.tachoFirmware?` (FW ${d.tachoFirmware})`:''}`:'—',tachoStatus,tachoAction,tachoWho));
+  }
   const srcDriverOk=!d.srcDriver||d.srcDriver==='tacho';
   d8c.push(Object.assign(ck(t('lbDriverLogin'),`tacho  |  Current: ${d.srcDriver||'—'}`,srcDriverOk?'ok':'warn',
     srcDriverOk?null:'actFvCheck',srcDriverOk?null:'customer'),{crHide:true}));
@@ -1463,6 +1524,7 @@ function render(sections,d){
       <div class="todo-what">${esc(t(p.section))} — ${esc(p.label)}${
         p.guide==='its-consent'?` <button class="btn-howto" onclick="openInfoModal()"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="10" x2="12" y2="18"/><line x1="12" y1="6" x2="12.01" y2="6"/></svg>${t('btnHowToFix')}</button>`:
         p.guide==='display-connection'?` <button class="btn-howto" onclick="openDisplayModal()"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="10" x2="12" y2="18"/><line x1="12" y1="6" x2="12.01" y2="6"/></svg>${t('btnHowToFix')}</button>`:
+        p.guide==='tacho-fw'?` <button class="btn-howto" onclick="openTachoFwModal()"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="10" x2="12" y2="18"/><line x1="12" y1="6" x2="12.01" y2="6"/></svg>${t('btnHowToFix')}</button>`:
         p.guide==='fms-issue'?` <button class="btn-howto" onclick="openFmsModal()"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="10" x2="12" y2="18"/><line x1="12" y1="6" x2="12.01" y2="6"/></svg>${t('btnHowToFix')}</button>`:''
       }</div>
       <div class="todo-fix">${p.action?esc(t(p.action)):t('todoDefaultAction')}${p.who==='customer-then-support'?` <span class="esc-note">${t('todoEscNote')}</span>`:''}</div>
@@ -1591,6 +1653,8 @@ function copyCmd(el,text){
 
 function openFmsModal(){ document.getElementById('fms-modal').style.display='flex'; }
 function closeFmsModal(){ document.getElementById('fms-modal').style.display='none'; }
+function openTachoFwModal(){ document.getElementById('tachofw-modal').style.display='flex'; }
+function closeTachoFwModal(){ document.getElementById('tachofw-modal').style.display='none'; }
 function closePcmModal(){ document.getElementById('pcm-modal').style.display='none'; document.getElementById('diag8-input').value=''; lastAnalysis=null; }
 function openDisplayModal(){ document.getElementById('display-modal').style.display='flex'; }
 function closeDisplayModal(){ document.getElementById('display-modal').style.display='none'; }
