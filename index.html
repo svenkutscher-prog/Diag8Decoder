@@ -241,6 +241,11 @@ input::placeholder,textarea::placeholder{color:#a7b4c6}
 .info-step-num{width:22px;height:22px;border-radius:50%;background:var(--steel-light);color:var(--steel);font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
 .btn-howto{display:inline-flex;align-items:center;gap:6px;margin-top:0;vertical-align:middle;margin-left:6px;font-size:11.5px;font-weight:600;color:var(--steel);background:var(--steel-light);border:none;border-radius:6px;padding:5px 10px;cursor:pointer}
 .btn-howto:hover{background:#d5e3f5}
+.choice-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}
+.choice-card{background:#fff;border:1.5px solid var(--line);border-radius:10px;padding:14px 12px;text-align:center;cursor:pointer;transition:all .15s}
+.choice-card:hover{border-color:#c8d9ef;background:var(--steel-light)}
+.choice-card .cc-t{font-size:13px;font-weight:600;color:var(--ink);margin-top:6px}
+.choice-card .cc-s{font-size:11px;color:var(--muted);margin-top:2px}
 @media (prefers-reduced-motion: reduce){*{transition:none!important}}
 </style>
 </head>
@@ -248,7 +253,7 @@ input::placeholder,textarea::placeholder{color:#a7b4c6}
 
 <div class="app">
   <div class="topbar">
-    <div class="logo"><div class="logo-mark" id="logo-mark" title="" onclick="copyCustomerReport(this)">D8</div>DIAG8 Analyser</div>
+    <div class="logo"><div class="logo-mark" id="logo-mark" title="" onclick="openReportChoice()">D8</div>DIAG8 Analyser</div>
     <div class="top-divider"></div>
     <div class="top-device" id="top-device">
       <div class="td-item"><span class="td-label">Device</span><span class="td-val" id="td-device">—</span></div>
@@ -262,7 +267,7 @@ input::placeholder,textarea::placeholder{color:#a7b4c6}
     <div class="top-spacer"></div>
     <div class="top-battery" id="top-battery"></div>
     <div class="top-drivers" id="top-drivers"></div>
-    <span class="top-tag" id="top-tag-version">Version 2.4 · by Sven Kutscher</span>
+    <span class="top-tag" id="top-tag-version"></span>
     <div class="lang-switcher">
       <button class="lang-btn active" onclick="setLang('en')" id="lang-en" title="English"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 60 30" width="24" height="12"><rect width="60" height="30" fill="#012169"/><path d="M0 0l60 30M60 0L0 30" stroke="#fff" stroke-width="6"/><path d="M0 0l60 30M60 0L0 30" stroke="#C8102E" stroke-width="4"/><path d="M30 0v30M0 15h60" stroke="#fff" stroke-width="10"/><path d="M30 0v30M0 15h60" stroke="#C8102E" stroke-width="6"/></svg></button>
       <button class="lang-btn" onclick="setLang('de')" id="lang-de" title="Deutsch"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 5 3" width="24" height="14"><rect width="5" height="1" fill="#000"/><rect y="1" width="5" height="1" fill="#D00"/><rect y="2" width="5" height="1" fill="#FFCE00"/></svg></button>
@@ -539,6 +544,36 @@ input::placeholder,textarea::placeholder{color:#a7b4c6}
   </div>
 </div>
 
+<!-- REPORT EXPORT CHOICE MODAL -->
+<div id="report-choice-modal" style="display:none" class="modal-overlay" onclick="if(event.target===this)closeReportChoice()">
+  <div class="modal">
+    <div class="modal-head">
+      <div class="modal-icn" style="background:var(--info-bg)">
+        <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#1d4e89" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="13" y2="17"/></svg>
+      </div>
+      <div>
+        <div class="modal-title" id="rc-title">Export customer report</div>
+        <div class="modal-sub" id="rc-sub">How would you like to receive the report?</div>
+      </div>
+    </div>
+    <div class="modal-body">
+      <div class="choice-grid">
+        <button class="choice-card" onclick="reportChoiceClipboard()">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#1d4e89" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+          <div class="cc-t" id="rc-clip">Clipboard</div>
+          <div class="cc-s" id="rc-clip-sub">To paste into an email</div>
+        </button>
+        <button class="choice-card" onclick="reportChoicePdf()">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#b91c1c" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="12" x2="12" y2="18"/><polyline points="9 15 12 18 15 15"/></svg>
+          <div class="cc-t" id="rc-pdf">PDF</div>
+          <div class="cc-s" id="rc-pdf-sub">Save as file</div>
+        </button>
+      </div>
+      <div class="m-btns"><button class="m-sec" id="rc-cancel" onclick="closeReportChoice()">Cancel</button></div>
+    </div>
+  </div>
+</div>
+
 <!-- IMAGE LIGHTBOX -->
 <div id="lightbox" style="display:none" class="lightbox-overlay" onclick="closeLightbox()">
   <button class="lightbox-close" onclick="closeLightbox()">
@@ -548,6 +583,8 @@ input::placeholder,textarea::placeholder{color:#a7b4c6}
 </div>
 
 <script>
+// ===== App-Version: nur hier ändern =====
+const APP_VERSION='3.4';
 /* ================= i18n ================= */
 var LANG = {
   en: {
@@ -589,6 +626,9 @@ var LANG = {
     btnCopyCustomerReport:'Copy customer report', btnCopyCustomerReportTitle:'Copy a colorful HTML health report to paste into a customer email',
     crBrand:'FleetVisor Device Diagnostics', crTitle:'Device Health Check Report', crGreeting:'Hello,', crGreetingCompany:'Hello %COMPANY%,',
     crIntro:'Here is the result of the device health check we just performed:', crCaptured:'Checked on', crFooterGenerated:'Generated locally by DIAG8 Analyser', crFooterContact:'Questions? Contact',
+    crChoiceTitle:'Export customer report', crChoiceSub:'How would you like to receive the report?',
+    crChoiceClip:'Clipboard', crChoiceClipSub:'To paste into an email',
+    crChoicePdf:'PDF', crChoicePdfSub:'Save as file', btnCancel:'Cancel',
     fmsTitle:'FMS Issues', fmsSub:'If you have the required FleetVisor permissions, follow the steps below. Otherwise, contact your internal Fleetmanager or Customer Support.',
     fmsStep1:'Send a Reset command to the vehicle.',
     fmsStep2:'Send FleetVisor settings to the vehicle.',
@@ -619,7 +659,7 @@ var LANG = {
     warnIgnTitle:'Ignition is OFF', warnIgnDesc:'The vehicle must be running during capture.',
     warnTsTitle:'Timestamp outdated', warnTsDesc:'This Diag8 is more than 24 hours old.',
     tdVehicle:'Vehicle', tdDevice:'Device', tdFw:'FW', tdVin:'VIN', tdAlias:'Alias', tdCid:'CID',
-    versionTag:'Version 2.3 · by Sven Kutscher',
+    versionTag:'Version '+APP_VERSION+' · by Sven Kutscher',
     secBasics:'Basics', secVehicle:'Vehicle Data', secTacho:'Tachograph (driving/rest times, driver name)', secGps:'GPS & Location',
     lbTimestamp:'Timestamp', lbFirmware:'Firmware', lbAliasCid:'Alias / CID', lbDisplay:'Display (UI)',
     lbIgnition:'Ignition', lbFmsData:'FMS data', lbVin:'VIN', lbFuel:'Fuel level', lbMileage:'Mileage',
@@ -697,6 +737,9 @@ var LANG = {
     btnCopyCustomerReport:'Kundenbericht kopieren', btnCopyCustomerReportTitle:'Bunten HTML-Statusbericht kopieren, um ihn in eine Kunden-E-Mail einzufügen',
     crBrand:'FleetVisor Gerätediagnose', crTitle:'Geräte-Statusbericht', crGreeting:'Hallo,', crGreetingCompany:'Hallo %COMPANY%,',
     crIntro:'Hier das Ergebnis der soeben durchgeführten Geräteprüfung:', crCaptured:'Geprüft am', crFooterGenerated:'Lokal generiert vom DIAG8 Analyser', crFooterContact:'Fragen? Kontakt:',
+    crChoiceTitle:'Kundenbericht exportieren', crChoiceSub:'Wie möchtest du den Bericht erhalten?',
+    crChoiceClip:'Zwischenspeicher', crChoiceClipSub:'Zum Einfügen in eine E-Mail',
+    crChoicePdf:'PDF', crChoicePdfSub:'Als Datei speichern', btnCancel:'Abbrechen',
     stateIssues:'Fehler', stateWarning:'Warnung', stateAllPassed:'Alle bestanden', statePassedOf:'%OK%/%TOTAL% bestanden',
     secBasicsSub:'Zeitstempel, Firmware, Geräte-ID', secVehicleSub:'Zündung, FMS-Daten, VIN, Kilometerstand',
     secTachoSub:'Lenk-/Ruhezeiten, Fahrername', secGpsSub:'GPS-Fix und letzte Position',
@@ -730,7 +773,7 @@ var LANG = {
     warnIgnTitle:'Zündung ist AUS', warnIgnDesc:'Das Fahrzeug muss während der Erfassung laufen.',
     warnTsTitle:'Zeitstempel veraltet', warnTsDesc:'Dieser Diag8 ist mehr als 24 Stunden alt.',
     tdVehicle:'Fahrzeug', tdDevice:'Gerät', tdFw:'FW', tdVin:'FIN', tdAlias:'Alias', tdCid:'CID',
-    versionTag:'Version 2.3 · von Sven Kutscher',
+    versionTag:'Version '+APP_VERSION+' · von Sven Kutscher',
     secBasics:'Grundlagen', secVehicle:'Fahrzeugdaten', secTacho:'Tachograph (Lenk-/Ruhezeiten, Fahrername)', secGps:'GPS & Standort',
     lbTimestamp:'Zeitstempel', lbFirmware:'Firmware', lbAliasCid:'Alias / CID', lbDisplay:'Display (UI)',
     lbIgnition:'Zündung', lbFmsData:'FMS-Daten', lbVin:'FIN', lbFuel:'Kraftstoffstand', lbMileage:'Kilometerstand',
@@ -808,6 +851,9 @@ var LANG = {
     btnCopyCustomerReport:'Kopiuj raport dla klienta', btnCopyCustomerReportTitle:'Skopiuj kolorowy raport HTML, aby wkleić go do e-maila do klienta',
     crBrand:'Diagnostyka urządzeń FleetVisor', crTitle:'Raport stanu urządzenia', crGreeting:'Dzień dobry,', crGreetingCompany:'Dzień dobry %COMPANY%,',
     crIntro:'Oto wynik przeprowadzonej właśnie kontroli stanu urządzenia:', crCaptured:'Sprawdzono', crFooterGenerated:'Wygenerowano lokalnie przez DIAG8 Analyser', crFooterContact:'Pytania? Kontakt:',
+    crChoiceTitle:'Eksportuj raport dla klienta', crChoiceSub:'W jaki sposób chcesz otrzymać raport?',
+    crChoiceClip:'Schowek', crChoiceClipSub:'Do wklejenia w e-mail',
+    crChoicePdf:'PDF', crChoicePdfSub:'Zapisz jako plik', btnCancel:'Anuluj',
     stateIssues:'błąd(ów)', stateWarning:'Ostrzeżenie', stateAllPassed:'Wszystkie zaliczone', statePassedOf:'%OK%/%TOTAL% zaliczone',
     secBasicsSub:'Znacznik czasu, firmware, ID urządzenia', secVehicleSub:'Zapłon, dane FMS, VIN, przebieg',
     secTachoSub:'Czas jazdy/odpoczynku, nazwisko kierowcy', secGpsSub:'Fix GPS i ostatnia pozycja',
@@ -881,7 +927,7 @@ var LANG = {
     deviceImgSub:'Przykładowa etykieta dla tego typu urządzenia',
     deviceImgHint:'Kliknij, aby powiększyć',
     tdVehicle:'Pojazd', tdDevice:'Urządzenie', tdFw:'FW', tdVin:'VIN', tdAlias:'Alias', tdCid:'CID',
-    versionTag:'Wersja 2.3 · autor: Sven Kutscher',
+    versionTag:'Wersja '+APP_VERSION+' · autor: Sven Kutscher',
   }
 };
 
@@ -1001,6 +1047,15 @@ function renderModals(){
   document.querySelector('#warn-modal .m-hint').innerHTML = s.warnHint.replace('ignition on','<strong>ignition on</strong>').replace('engine running','<strong>engine running</strong>').replace('Zündung','<strong>Zündung</strong>').replace('laufendem Motor','<strong>laufendem Motor</strong>').replace('zapłonie','<strong>zapłonie</strong>').replace('pracującym silniku','<strong>pracującym silniku</strong>');
   document.querySelector('#warn-modal .m-sec').textContent = s.btnAnalyseAnyway;
   document.querySelector('#warn-modal .m-pri').textContent = s.btnClearStart;
+
+  // Report choice modal
+  document.getElementById('rc-title').textContent = s.crChoiceTitle;
+  document.getElementById('rc-sub').textContent = s.crChoiceSub;
+  document.getElementById('rc-clip').textContent = s.crChoiceClip;
+  document.getElementById('rc-clip-sub').textContent = s.crChoiceClipSub;
+  document.getElementById('rc-pdf').textContent = s.crChoicePdf;
+  document.getElementById('rc-pdf-sub').textContent = s.crChoicePdfSub;
+  document.getElementById('rc-cancel').textContent = s.btnCancel;
 }
 
 document.addEventListener('DOMContentLoaded', ()=>{ if(typeof LANG!=='undefined'){ applyI18n(); renderModals(); } loadFromUrlParam(); });
@@ -1831,6 +1886,68 @@ function copyCustomerReport(el){
   } else {
     navigator.clipboard.writeText(plain).then(flashCopied);
   }
+}
+
+function openReportChoice(){
+  if(!lastAnalysis||!lastSections){ alert(t('errNoDiagFirst')); return; }
+  document.getElementById('report-choice-modal').style.display='flex';
+}
+function closeReportChoice(){ document.getElementById('report-choice-modal').style.display='none'; }
+
+function reportChoiceClipboard(){
+  closeReportChoice();
+  copyCustomerReport(document.getElementById('logo-mark'));
+}
+function reportChoicePdf(){
+  closeReportChoice();
+  exportCustomerReportPdf();
+}
+
+function exportCustomerReportPdf(){
+  const html=buildCustomerReportHtml();
+  if(!html){ alert(t('errNoDiagFirst')); return; }
+  const d=lastAnalysis;
+  const datePart=(d.utcDate&&!isNaN(d.utcDate)?d.utcDate:new Date()).toISOString().slice(0,10);
+  const clean=s=>String(s||'').trim().replace(/[\s\/\\:*?"<>|]+/g,'-').replace(/-{2,}/g,'-').replace(/^-|-$/g,'');
+  const fileName=['Diagnose-Report_AddSecure', clean(d.btname)||clean(d.cid)||'unknown', clean(d.deviceType), datePart].filter(Boolean).join('_');
+
+  const old=document.getElementById('pdf-print-frame');
+  if(old) old.remove();
+  const frame=document.createElement('iframe');
+  frame.id='pdf-print-frame';
+  frame.style.cssText='position:fixed;left:-10000px;top:0;width:794px;height:1200px;border:0';
+  document.body.appendChild(frame);
+
+  const doc=frame.contentWindow.document;
+  doc.open();
+  doc.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>${esc(fileName)}</title>
+<style>
+@page{size:A4;margin:0}
+html,body{margin:0;padding:0;background:#fff}
+#pdf-wrap{width:718px;padding:10mm;box-sizing:content-box}
+*{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+tr{page-break-inside:avoid}
+</style></head><body><div id="pdf-wrap">${html}</div></body></html>`);
+  doc.close();
+
+  // @page margin:0 hides the browser's header/footer (URL, date, title);
+  // the 10mm white border comes from #pdf-wrap padding instead.
+  // Fit to one A4 page: A4 = 794 x 1123 px
+  const PAGE_MAX_H=1110;
+  const wrap=doc.getElementById('pdf-wrap');
+  const contentH=wrap.offsetHeight;
+  if(contentH>PAGE_MAX_H) wrap.style.zoom=(PAGE_MAX_H/contentH).toFixed(3);
+
+  const origTitle=document.title;
+  document.title=fileName; // Chrome/Edge uses this as the suggested PDF file name
+  setTimeout(()=>{
+    try{
+      frame.contentWindow.focus();
+      frame.contentWindow.print();
+    } finally {
+      setTimeout(()=>{ document.title=origTitle; },1000);
+    }
+  },300);
 }
 
 function sendToHotline(){
